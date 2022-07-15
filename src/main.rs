@@ -1,5 +1,4 @@
 use std::path::Path;
-use std::process::exit;
 
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
@@ -40,16 +39,13 @@ fn run_repl() {
 
 fn main() -> Result<(), std::io::Error> {
 	let mut args = std::env::args().skip(1);
-	if args.len() < 1 {
-		println!("Usage: rys [path to script]");
-		exit(64)
-	}
 
-	if let Some(arg) = args.next() {
-		match arg.as_str() {
-			"repl" => run_repl(),
+	match args.next() {
+		Some(value) => match value.as_str() {
+			"help" | "-h" | "--help" => println!("Usage: rys [path to script]"),
 			path => run_file(path)?,
-		}
+		},
+		None => run_repl(),
 	}
 
 	Ok(())
