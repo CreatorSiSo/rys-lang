@@ -1,4 +1,4 @@
-use std::str::from_utf8_unchecked;
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct Error {
@@ -68,9 +68,18 @@ pub enum TokenType {
 pub struct Token {
 	pub typ: TokenType,
 	_lexeme: Vec<char>,
-	_literal: Option<String>,
+	literal: Option<String>,
 	_line: usize,
 	// col: u64,
+}
+
+impl Display for Token {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match &self.literal {
+			Some(value) => write!(f, "{:?}({})", self.typ, value),
+			None => write!(f, "{:?}", self.typ),
+		}
+	}
 }
 
 pub struct Lexer {
@@ -112,15 +121,15 @@ impl Lexer {
 		self.tokens.push(Token {
 			typ: TokenType::Eof,
 			_lexeme: vec![],
-			_literal: None,
+			literal: None,
 			_line: self.line,
 		});
 
-		return if self.errors.is_empty() {
+		if self.errors.is_empty() {
 			Ok(&self.tokens)
 		} else {
 			Err(&self.errors)
-		};
+		}
 	}
 
 	fn lex_token(&mut self) -> Result<(), Error> {
@@ -168,7 +177,7 @@ impl Lexer {
 	fn push_token(&mut self, typ: TokenType, literal: Option<String>) {
 		self.tokens.push(Token {
 			typ,
-			_literal: literal,
+			literal,
 			_lexeme: self.source[self.start..self.current].to_vec(),
 			_line: self.line,
 		})
@@ -194,18 +203,12 @@ impl Lexer {
 		// Consume closing "
 		self.advance();
 
-		let bytes: Vec<u16> = self.source[self.start + 1..self.current - 1]
+		let value: String = self.source[self.start + 1..self.current - 1]
 			.iter()
-			.map(|c| *c as u16)
+			.map(|c| c.to_string())
 			.collect();
 
-		match String::from_utf16(&bytes) {
-			Ok(value) => self.push_token(TokenType::String, Some(value)),
-			Err(err) => self
-				.errors
-				// TODO: Only pass through acually useful error data
-				.push(Error::new(format!("{:?}", err), self.line)),
-		}
+		self.push_token(TokenType::String, Some(value));
 	}
 
 	fn number(&mut self) {
@@ -240,23 +243,23 @@ impl Lexer {
 		};
 
 		self.current += 1;
-		return true;
+		true
 	}
 
 	fn peek(&self) -> char {
-		return if self.is_at_end() {
+		if self.is_at_end() {
 			'\0'
 		} else {
 			self.source[self.current]
-		};
+		}
 	}
 
 	fn peek_next(&self) -> char {
-		return if self.is_at_end() {
+		if self.is_at_end() {
 			'\0'
 		} else {
 			self.source[self.current + 1]
-		};
+		}
 	}
 
 	fn is_at_end(&self) -> bool {

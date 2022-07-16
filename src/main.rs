@@ -8,7 +8,7 @@ use lexer::Lexer;
 fn run(input: String) {
 	let mut lexer = Lexer::default();
 	match lexer.lex(input) {
-		Ok(tokens) => tokens.iter().for_each(|token| print!("{:?} ", token.typ)),
+		Ok(tokens) => tokens.iter().for_each(|token| print!("{token} ")),
 		Err(errors) => errors.iter().for_each(|err| println!("{:?}", err)),
 	}
 
