@@ -1,4 +1,15 @@
 // this is a comment
+/*1
+	and this is a
+	multiline
+	comment
+
+	/*
+		you can
+		nest them too
+	*/
+	/*2 /*3 /*4 */ */ */
+*/
 
 // grouping stuff
 (( )){}
@@ -47,3 +58,6 @@ this
 true
 let
 while
+
+/* /* */
+should be commented out

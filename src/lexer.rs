@@ -204,6 +204,26 @@ impl Lexer {
 					while self.peek() != '\n' && !self.is_at_end() {
 						self.advance();
 					}
+				} else if self.matches('*') {
+					let mut nested = 0;
+					while !self.is_at_end() {
+						if self.peek() == '/' && self.peek_next() == '*' {
+							nested += 1;
+						}
+						if self.peek() == '*' && self.peek_next() == '/' {
+							nested -= 1;
+						}
+						if nested < 0 {
+							break;
+						}
+						self.advance();
+					}
+
+					if !self.is_at_end() {
+						// Consume */
+						self.advance();
+						self.advance();
+					}
 				} else {
 					self.push_token(TokenType::Slash, None);
 				}
