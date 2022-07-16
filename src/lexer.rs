@@ -84,9 +84,9 @@ const KEYWORDS: [(&str, TokenType); 16] = [
 	("while", TokenType::While),
 ];
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
-	pub typ: TokenType,
+	typ: TokenType,
 	lexeme: Vec<char>,
 	literal: Option<Literal>,
 	_line: usize,
@@ -106,11 +106,10 @@ impl Display for Token {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Literal {
 	String(String),
 	Number(f64),
-	Boolean(bool),
 }
 
 impl Display for Literal {
@@ -118,7 +117,6 @@ impl Display for Literal {
 		match self {
 			Literal::String(value) => write!(f, "{value}"),
 			Literal::Number(value) => write!(f, "{value}"),
-			Literal::Boolean(value) => write!(f, "{value}"),
 		}
 	}
 }
@@ -177,7 +175,7 @@ impl Lexer {
 		let char = self.advance();
 		match char {
 			'\n' => {
-				// self.push_token(TokenType::NewLine, None);
+				self.push_token(TokenType::NewLine, None);
 				self.line += 1;
 			}
 			'\t' | '\r' | ' ' => {}

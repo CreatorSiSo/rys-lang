@@ -1,14 +1,25 @@
+use parser::Parser;
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 use std::path::Path;
 
 mod lexer;
+mod parser;
 use lexer::Lexer;
 
 fn run(input: String) {
 	let mut lexer = Lexer::default();
+	let mut parser = Parser::default();
+
 	match lexer.scan(input) {
-		Ok(tokens) => tokens.iter().for_each(|token| print!("{token} ")),
+		Ok(tokens) => {
+			tokens.iter().for_each(|token| print!("{token} "));
+
+			match parser.parse(tokens.to_vec()) {
+				Ok(ast) => print!("{:?}", ast),
+				Err(errors) => errors.iter().for_each(|err| println!("{:?}", err)),
+			}
+		}
 		Err(errors) => errors.iter().for_each(|err| println!("{:?}", err)),
 	}
 
