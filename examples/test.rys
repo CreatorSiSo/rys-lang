@@ -12,7 +12,7 @@
 */
 
 // grouping stuff
-(( )){}
+((2 + 2)){}
 
 // operators
 !*+-/=<>

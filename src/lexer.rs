@@ -101,7 +101,7 @@ impl Lexer {
 			typ: TokenType::Eof,
 			lexeme: String::new(),
 			literal: None,
-			_line: self.line,
+			line: self.line,
 		});
 
 		if self.errors.is_empty() {
@@ -199,7 +199,7 @@ impl Lexer {
 			typ,
 			literal,
 			lexeme: self.source[self.start..self.current].iter().collect(),
-			_line: self.line,
+			line: self.line,
 		})
 	}
 

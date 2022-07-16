@@ -57,6 +57,6 @@ pub struct Token {
 	pub typ: TokenType,
 	pub lexeme: String,
 	pub literal: Option<lexer::Literal>,
-	pub _line: usize,
+	pub line: usize,
 	// col: u64,
 }

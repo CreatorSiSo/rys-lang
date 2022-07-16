@@ -23,7 +23,7 @@ fn run(input: String) {
 
 			match parser.parse(tokens.to_vec()) {
 				Ok(expressions) => println!("{:#?}", expressions),
-				Err(errors) => errors.iter().for_each(|err| println!("{:?}", err)),
+				Err(errors) => errors.iter().for_each(|err| println!("{err}")),
 			}
 			println!()
 		}

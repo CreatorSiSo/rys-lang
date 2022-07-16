@@ -27,21 +27,25 @@ impl Parser {
 		self.errors.clear();
 		self.current = 0;
 
-		let expressions = {
+		let statements = {
 			let mut vec = Vec::new();
 			loop {
 				if self.is_at_end() {
 					break vec;
 				}
-				match self.expression() {
-					Ok(expr) => vec.push(expr),
+				match self.statement() {
+					Ok(maybe_stmt) => {
+						if let Some(stmt) = maybe_stmt {
+							vec.push(stmt)
+						}
+					}
 					Err(err) => self.errors.push(err),
 				}
 			}
 		};
 
 		if self.errors.is_empty() {
-			Ok(expressions)
+			Ok(statements)
 		} else {
 			Err(&self.errors)
 		}
@@ -50,6 +54,20 @@ impl Parser {
 
 /// Grammar definition
 impl Parser {
+	/// statement => expression ("\n" | ";" | EOF)
+	fn statement(&mut self) -> Result<Option<Expr>, ParseError> {
+		while self.matches(&[TokenType::NewLine]) {
+			self.advance();
+		}
+
+		let expr = self.expression()?;
+		let peek = self.peek();
+		match peek.typ {
+			TokenType::NewLine | TokenType::Semicolon | TokenType::Eof => Ok(Some(expr)),
+			_ => ParseError::token_mismatch(peek, "Expected newline or `;`"),
+		}
+	}
+
 	/// expression => equality
 	fn expression(&mut self) -> Result<Expr, ParseError> {
 		self.equality()
@@ -150,13 +168,13 @@ impl Parser {
 
 		if self.matches(&[TokenType::LeftParen]) {
 			let expr = Box::new(self.expression()?);
-			self.consume(TokenType::RightParen, "Expected `)` after expression!")?;
+			self.consume(TokenType::RightParen, "Expected closing `)`")?;
 			return Ok(Expr::Group(expr));
 		}
 
 		ParseError::token_mismatch(
 			self.advance(),
-			"Expected one of NUMBER | STRING | `true` | `false` | `nil`!",
+			"Expected one of Number, String, `true`, `false`, `nil`",
 		)
 	}
 }
