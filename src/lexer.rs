@@ -45,24 +45,44 @@ pub enum TokenType {
 	Number,
 
 	// Keywords.
-	// And,
-	// Struct,
-	// Else,
-	// False,
-	// Fun,
-	// For,
-	// If,
-	// Nil,
-	// Or,
-	// Print,
-	// Return,
-	// Super,
-	// This,
-	// True,
-	// Let,
-	// While,
+	And,
+	Struct,
+	Else,
+	False,
+	Fun,
+	For,
+	If,
+	Nil,
+	Or,
+	Print,
+	Return,
+	Super,
+	This,
+	True,
+	Let,
+	While,
+
 	Eof,
 }
+
+const KEYWORDS: [(&str, TokenType); 16] = [
+	("and", TokenType::And),
+	("struct", TokenType::Struct),
+	("else", TokenType::Else),
+	("false", TokenType::False),
+	("for", TokenType::For),
+	("fun", TokenType::Fun),
+	("if", TokenType::If),
+	("nil", TokenType::Nil),
+	("or", TokenType::Or),
+	("print", TokenType::Print),
+	("return", TokenType::Return),
+	("super", TokenType::Super),
+	("this", TokenType::This),
+	("true", TokenType::True),
+	("let", TokenType::Let),
+	("while", TokenType::While),
+];
 
 #[derive(Debug)]
 pub struct Token {
@@ -157,7 +177,7 @@ impl Lexer {
 		let char = self.advance();
 		match char {
 			'\n' => {
-				self.push_token(TokenType::NewLine, None);
+				// self.push_token(TokenType::NewLine, None);
 				self.line += 1;
 			}
 			'\t' | '\r' | ' ' => {}
@@ -204,7 +224,15 @@ impl Lexer {
 			self.advance();
 		}
 
-		self.push_token(TokenType::Identifier, None)
+		let text: String = self.source[self.start..self.current]
+			.iter()
+			.map(|c| c.to_string())
+			.collect();
+
+		match KEYWORDS.iter().find(|(key, _)| *key == text) {
+			Some((_, token_type)) => self.push_token(*token_type, None),
+			None => self.push_token(TokenType::Identifier, None),
+		}
 	}
 
 	fn push_token(&mut self, typ: TokenType, literal: Option<Literal>) {

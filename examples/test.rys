@@ -1,11 +1,49 @@
 // this is a comment
-(( )){} // grouping stuff
-!*+-/=<> // operators
+
+// grouping stuff
+(( )){}
+
+// operators
+!*+-/=<>
 != == <= >=
-"sdöÄfjsgjǣofdgh""" // strings
+
+// strings
+"sdöÄfjsgjǣofdgh"""
+"it's a multiline string!!
+	Commodo velit ea consectetur ullamco cupidatat
+	pariatur voluptate ex est veniam.
+	Nostrud do nulla tempor ea dolor commodo pariatur
+	cillum consectetur excepteur Lorem sunt commodo
+	nulla.
+	Sint adipisicing exercitation voluptate non irure
+	ullamco aliquip fugiat fugiat.
+"
+
+// numbers
 0293457346783873434569999999999999999999999.99999
 //  34_560_000
 560897890.42
-named_thing // valid identifiers
-NamedThing // valid identifiers
+
+// valid identifiers
+named_thing
+NamedThing
+// invalid identifier
 // named-thing
+
+// keywords
+and
+struct
+else
+false
+fun
+for
+if
+nil
+or
+print
+return
+super
+this
+true
+let
+while
