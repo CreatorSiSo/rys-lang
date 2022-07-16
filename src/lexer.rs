@@ -67,7 +67,7 @@ pub enum TokenType {
 #[derive(Debug)]
 pub struct Token {
 	pub typ: TokenType,
-	_lexeme: Vec<char>,
+	lexeme: Vec<char>,
 	literal: Option<Literal>,
 	_line: usize,
 	// col: u64,
@@ -75,10 +75,14 @@ pub struct Token {
 
 impl Display for Token {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		match &self.literal {
-			Some(value) => write!(f, "{:?}({})", self.typ, value),
-			None => write!(f, "{:?}", self.typ),
+		write!(f, "{:?}", self.typ)?;
+		if let TokenType::Identifier = self.typ {
+			write!(f, "({})", self.lexeme.iter().collect::<String>())?
 		}
+		if let Some(value) = &self.literal {
+			write!(f, "({})", value)?
+		}
+		Ok(())
 	}
 }
 
@@ -123,21 +127,21 @@ impl Default for Lexer {
 }
 
 impl Lexer {
-	pub fn lex(&mut self, input: String) -> Result<&[Token], &[Error]> {
+	pub fn scan(&mut self, input: String) -> Result<&[Token], &[Error]> {
 		self.errors.clear();
 		self.line = 1;
 		self.source = input.chars().collect();
 
 		while !self.is_at_end() {
 			self.start = self.current;
-			if let Err(err) = self.lex_token() {
+			if let Err(err) = self.scan_token() {
 				self.errors.push(err)
 			}
 		}
 
 		self.tokens.push(Token {
 			typ: TokenType::Eof,
-			_lexeme: vec![],
+			lexeme: vec![],
 			literal: None,
 			_line: self.line,
 		});
@@ -149,7 +153,7 @@ impl Lexer {
 		}
 	}
 
-	fn lex_token(&mut self) -> Result<(), Error> {
+	fn scan_token(&mut self) -> Result<(), Error> {
 		let char = self.advance();
 		match char {
 			'\n' => {
@@ -186,16 +190,28 @@ impl Lexer {
 			}
 			'"' => self.string(),
 			'0'..='9' => self.number(),
+			c if c.is_alphabetic() => self.idetifier(),
 			c => return Err(Error::new(format!("Unexpected character `{c}`"), self.line)),
 		};
 		Ok(())
+	}
+
+	fn idetifier(&mut self) {
+		while {
+			let c = self.peek();
+			c.is_alphanumeric() || c == '_'
+		} {
+			self.advance();
+		}
+
+		self.push_token(TokenType::Identifier, None)
 	}
 
 	fn push_token(&mut self, typ: TokenType, literal: Option<Literal>) {
 		self.tokens.push(Token {
 			typ,
 			literal,
-			_lexeme: self.source[self.start..self.current].to_vec(),
+			lexeme: self.source[self.start..self.current].to_vec(),
 			_line: self.line,
 		})
 	}

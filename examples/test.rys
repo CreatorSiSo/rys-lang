@@ -5,4 +5,7 @@
 "sdöÄfjsgjǣofdgh""" // strings
 0293457346783873434569999999999999999999999.99999
 //  34_560_000
-560897890
+560897890.42
+named_thing // valid identifiers
+NamedThing // valid identifiers
+// named-thing
