@@ -68,7 +68,7 @@ pub enum TokenType {
 pub struct Token {
 	pub typ: TokenType,
 	_lexeme: Vec<char>,
-	literal: Option<String>,
+	literal: Option<Literal>,
 	_line: usize,
 	// col: u64,
 }
@@ -82,8 +82,25 @@ impl Display for Token {
 	}
 }
 
+#[derive(Debug)]
+enum Literal {
+	String(String),
+	Number(f64),
+	Boolean(bool),
+}
+
+impl Display for Literal {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Literal::String(value) => write!(f, "{value}"),
+			Literal::Number(value) => write!(f, "{value}"),
+			Literal::Boolean(value) => write!(f, "{value}"),
+		}
+	}
+}
+
 pub struct Lexer {
-	// TODO: Use Vec<u8> insted of Vec<char>
+	// TODO: Should I use a Vec<u8> insted of Vec<char>?
 	source: Vec<char>,
 	tokens: Vec<Token>,
 	errors: Vec<Error>,
@@ -174,7 +191,7 @@ impl Lexer {
 		Ok(())
 	}
 
-	fn push_token(&mut self, typ: TokenType, literal: Option<String>) {
+	fn push_token(&mut self, typ: TokenType, literal: Option<Literal>) {
 		self.tokens.push(Token {
 			typ,
 			literal,
@@ -208,7 +225,7 @@ impl Lexer {
 			.map(|c| c.to_string())
 			.collect();
 
-		self.push_token(TokenType::String, Some(value));
+		self.push_token(TokenType::String, Some(Literal::String(value)));
 	}
 
 	fn number(&mut self) {
@@ -225,8 +242,17 @@ impl Lexer {
 			}
 		}
 
-		// TODO: Parse number from string
-		self.push_token(TokenType::Number, None);
+		let value: String = self.source[self.start..self.current]
+			.iter()
+			.map(|c| c.to_string())
+			.collect();
+
+		match value.parse::<f64>() {
+			Ok(number) => self.push_token(TokenType::Number, Some(Literal::Number(number))),
+			Err(err) => self
+				.errors
+				.push(Error::new(format!("{:?}", err), self.line)),
+		}
 	}
 
 	fn advance(&mut self) -> char {
@@ -255,7 +281,7 @@ impl Lexer {
 	}
 
 	fn peek_next(&self) -> char {
-		if self.is_at_end() {
+		if self.current + 1 >= self.source.len() {
 			'\0'
 		} else {
 			self.source[self.current + 1]
