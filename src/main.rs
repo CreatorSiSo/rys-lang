@@ -1,10 +1,22 @@
-use std::path::Path;
-
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
+use std::path::Path;
+
+mod lexer;
+use lexer::Lexer;
+
+fn run(input: String) {
+	let mut lexer = Lexer::default();
+	match lexer.lex(input) {
+		Ok(tokens) => tokens.iter().for_each(|token| print!("{:?} ", token.typ)),
+		Err(errors) => errors.iter().for_each(|err| println!("{:?}", err)),
+	}
+
+	println!()
+}
 
 fn run_file<P: AsRef<Path>>(path: P) -> Result<(), std::io::Error> {
-	let _file_data = std::fs::read_to_string(path)?;
+	run(std::fs::read_to_string(path)?);
 	Ok(())
 }
 
@@ -18,7 +30,7 @@ fn run_repl() {
 		match readline {
 			Ok(line) => {
 				rl.add_history_entry(line.as_str());
-				println!("Line: {}", line);
+				run(line);
 			}
 			Err(ReadlineError::Interrupted) => {
 				println!("CTRL-C");
