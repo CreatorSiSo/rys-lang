@@ -207,10 +207,11 @@ impl Lexer {
 				} else if self.matches('*') {
 					let mut nested = 0;
 					while !self.is_at_end() {
-						if self.peek() == '/' && self.peek_next() == '*' {
+						if self.peek() == '\n' {
+							self.line += 1;
+						} else if self.peek() == '/' && self.peek_next() == '*' {
 							nested += 1;
-						}
-						if self.peek() == '*' && self.peek_next() == '/' {
+						} else if self.peek() == '*' && self.peek_next() == '/' {
 							nested -= 1;
 						}
 						if nested < 0 {
@@ -230,13 +231,13 @@ impl Lexer {
 			}
 			'"' => self.string(),
 			'0'..='9' => self.number(),
-			c if c.is_alphabetic() => self.idetifier(),
+			c if c.is_alphabetic() => self.identifier(),
 			c => return Err(Error::new(format!("Unexpected character `{c}`"), self.line)),
 		};
 		Ok(())
 	}
 
-	fn idetifier(&mut self) {
+	fn identifier(&mut self) {
 		while {
 			let c = self.peek();
 			c.is_alphanumeric() || c == '_'
