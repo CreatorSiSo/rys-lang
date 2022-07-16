@@ -1,3 +1,4 @@
+use crate::token::*;
 use std::fmt::Display;
 
 #[derive(Debug)]
@@ -11,58 +12,6 @@ impl Error {
 	pub fn new(msg: String, line: usize) -> Self {
 		Self { msg, line }
 	}
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TokenType {
-	// Single-character tokens.
-	LeftParen,
-	RightParen,
-	LeftBrace,
-	RightBrace,
-	Comma,
-	Dot,
-	Minus,
-	Plus,
-	Slash,
-	Star,
-	Semicolon,
-	NewLine,
-
-	// One or two character tokens.
-	Bang,
-	BangEqual,
-	Equal,
-	EqualEqual,
-	Greater,
-	GreaterEqual,
-	Less,
-	LessEqual,
-
-	// Literals.
-	Identifier,
-	String,
-	Number,
-
-	// Keywords.
-	And,
-	Struct,
-	Else,
-	False,
-	Fun,
-	For,
-	If,
-	Nil,
-	Or,
-	Print,
-	Return,
-	Super,
-	This,
-	True,
-	Let,
-	While,
-
-	Eof,
 }
 
 const KEYWORDS: [(&str, TokenType); 16] = [
@@ -84,20 +33,11 @@ const KEYWORDS: [(&str, TokenType); 16] = [
 	("while", TokenType::While),
 ];
 
-#[derive(Debug, Clone)]
-pub struct Token {
-	typ: TokenType,
-	lexeme: Vec<char>,
-	literal: Option<Literal>,
-	_line: usize,
-	// col: u64,
-}
-
 impl Display for Token {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "{:?}", self.typ)?;
 		if let TokenType::Identifier = self.typ {
-			write!(f, "({})", self.lexeme.iter().collect::<String>())?
+			write!(f, "({})", self.lexeme)?
 		}
 		if let Some(value) = &self.literal {
 			write!(f, "({})", value)?
@@ -107,7 +47,7 @@ impl Display for Token {
 }
 
 #[derive(Debug, Clone)]
-enum Literal {
+pub enum Literal {
 	String(String),
 	Number(f64),
 }
@@ -159,7 +99,7 @@ impl Lexer {
 
 		self.tokens.push(Token {
 			typ: TokenType::Eof,
-			lexeme: vec![],
+			lexeme: String::new(),
 			literal: None,
 			_line: self.line,
 		});
@@ -258,7 +198,7 @@ impl Lexer {
 		self.tokens.push(Token {
 			typ,
 			literal,
-			lexeme: self.source[self.start..self.current].to_vec(),
+			lexeme: self.source[self.start..self.current].iter().collect(),
 			_line: self.line,
 		})
 	}

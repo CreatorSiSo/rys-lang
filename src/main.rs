@@ -3,8 +3,10 @@ use rustyline::error::ReadlineError;
 use rustyline::Editor;
 use std::path::Path;
 
+mod expr;
 mod lexer;
 mod parser;
+mod token;
 use lexer::Lexer;
 
 fn run(input: String) {
@@ -13,12 +15,17 @@ fn run(input: String) {
 
 	match lexer.scan(input) {
 		Ok(tokens) => {
-			tokens.iter().for_each(|token| print!("{token} "));
+			tokens.iter().for_each(|token| match token.typ {
+				token::TokenType::NewLine => println!("·"),
+				_ => print!("{token} "),
+			});
+			println!();
 
 			match parser.parse(tokens.to_vec()) {
-				Ok(ast) => print!("{:?}", ast),
+				Ok(expressions) => println!("{:#?}", expressions),
 				Err(errors) => errors.iter().for_each(|err| println!("{:?}", err)),
 			}
+			println!()
 		}
 		Err(errors) => errors.iter().for_each(|err| println!("{:?}", err)),
 	}
