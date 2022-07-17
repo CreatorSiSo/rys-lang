@@ -1,9 +1,8 @@
+use crate::expr::{Expr, UnaryOp};
 use crate::token::{Token, TokenType};
 
 mod error;
-mod expr;
 use error::ParseError;
-pub use expr::Expr;
 
 pub struct Parser {
 	tokens: Vec<Token>,
@@ -131,9 +130,14 @@ impl Parser {
 	/// unary => ("!" | "-") unary
 	fn unary(&mut self) -> Result<Expr, ParseError> {
 		if self.matches_any(&[TokenType::Bang, TokenType::Minus]) {
-			let operator = self.previous().clone();
+			let typ = self.previous().typ;
 			let right = Box::new(self.unary()?);
-			return Ok(Expr::Unary(operator, right));
+
+			return if typ == TokenType::Bang {
+				Ok(Expr::Unary(UnaryOp::Not, right))
+			} else {
+				Ok(Expr::Unary(UnaryOp::Neg, right))
+			};
 		}
 
 		self.primary()

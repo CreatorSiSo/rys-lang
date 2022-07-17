@@ -1,6 +1,9 @@
-use crate::literal::Literal;
-use crate::parser::Expr;
-use crate::token::{Token, TokenType};
+use crate::expr::{
+	Expr,
+	UnaryOp::{self, *},
+};
+use crate::literal::Literal::{self, *};
+use crate::token::Token;
 
 mod error;
 use error::RuntimeError;
@@ -8,10 +11,6 @@ use error::RuntimeError;
 pub struct Interpreter {}
 
 impl Interpreter {
-	pub fn new() -> Self {
-		Self {}
-	}
-
 	pub fn evaluate(expr: Expr) -> Result<Literal, RuntimeError> {
 		Ok(match expr {
 			Expr::Literal(literal) => literal,
@@ -21,26 +20,25 @@ impl Interpreter {
 		})
 	}
 
-	fn unary(op: Token, expr: Box<Expr>) -> Result<Literal, RuntimeError> {
+	fn unary(op: UnaryOp, expr: Box<Expr>) -> Result<Literal, RuntimeError> {
 		let right = Self::evaluate(*expr)?;
 
-		match right {
-			Literal::String(_) => Err(RuntimeError::ForbiddenType),
-			mut literal => {
-				match (op.typ, &literal) {
-					(TokenType::Bang, Literal::True) => literal = Literal::False,
-					(TokenType::Bang, Literal::False) => literal = Literal::True,
-					(TokenType::Bang, Literal::Number(_)) => return Err(RuntimeError::ForbiddenType),
+		match (op, right) {
+			(Not, True) => Ok(False),
+			(Not, False) => Ok(True),
+			(Neg, Number(n)) => Ok(Number(-n)),
 
-					(TokenType::Minus, Literal::Number(n)) => literal = Literal::Number(-n),
-					(TokenType::Minus, Literal::True | Literal::False) => {
-						return Err(RuntimeError::ForbiddenType)
-					}
-					_ => { /* Unreachable TODO: Remove */ }
-				}
-
-				// TODO: Remove
-				return Ok(literal);
+			(Neg, True | False) => {
+				RuntimeError::forbidden_type("Cannot apply unary operator `-` to `bool`")
+			}
+			(Not, Number(_)) => {
+				RuntimeError::forbidden_type("Cannot apply unary operator `!` to `number`")
+			}
+			(Neg, String(_)) => {
+				RuntimeError::forbidden_type("Cannot apply unary operator `-` to `string`")
+			}
+			(Not, String(_)) => {
+				RuntimeError::forbidden_type("Cannot apply unary operator `!` to `string`")
 			}
 		}
 	}
