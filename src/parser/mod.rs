@@ -3,7 +3,7 @@ use crate::token::{Token, TokenType};
 mod error;
 mod expr;
 use error::ParseError;
-use expr::Expr;
+pub use expr::Expr;
 
 pub struct Parser {
 	tokens: Vec<Token>,
