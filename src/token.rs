@@ -1,4 +1,5 @@
 use crate::literal::Literal;
+use std::fmt::Display;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenType {
@@ -58,4 +59,17 @@ pub struct Token {
 	pub literal: Option<Literal>,
 	pub line: usize,
 	// col: u64,
+}
+
+impl Display for Token {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{:?}", self.typ)?;
+		if let TokenType::Identifier = self.typ {
+			write!(f, "({})", self.lexeme)?
+		}
+		if let Some(value) = &self.literal {
+			write!(f, "({})", value)?
+		}
+		Ok(())
+	}
 }

@@ -1,6 +1,5 @@
 use crate::literal::Literal;
 use crate::token::{Token, TokenType};
-use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct Error {
@@ -32,19 +31,6 @@ const KEYWORDS: [(&str, TokenType); 15] = [
 	("let", TokenType::Let),
 	("while", TokenType::While),
 ];
-
-impl Display for Token {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{:?}", self.typ)?;
-		if let TokenType::Identifier = self.typ {
-			write!(f, "({})", self.lexeme)?
-		}
-		if let Some(value) = &self.literal {
-			write!(f, "({})", value)?
-		}
-		Ok(())
-	}
-}
 
 pub struct Lexer {
 	// TODO: Should I use a Vec<u8> insted of Vec<char>?

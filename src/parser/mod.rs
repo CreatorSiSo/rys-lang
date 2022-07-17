@@ -1,8 +1,9 @@
-use crate::expr::Expr;
 use crate::token::{Token, TokenType};
 
 mod error;
-use error::*;
+mod expr;
+use error::ParseError;
+use expr::Expr;
 
 pub struct Parser {
 	tokens: Vec<Token>,
