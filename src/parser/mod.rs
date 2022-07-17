@@ -1,4 +1,4 @@
-use crate::expr::{Expr, UnaryOp};
+use crate::expr::{BinaryOp, Expr, UnaryOp};
 use crate::token::{Token, TokenType};
 
 mod error;
@@ -75,9 +75,14 @@ impl Parser {
 		let mut expr = self.comparison()?;
 
 		while self.matches_any(&[TokenType::BangEqual, TokenType::EqualEqual]) {
-			let operator = self.previous().clone();
+			let typ = self.previous().typ;
 			let right = Box::new(self.comparison()?);
-			expr = Expr::Binary(Box::new(expr), operator, right);
+
+			expr = if typ == TokenType::BangEqual {
+				Expr::Binary(Box::new(expr), BinaryOp::NotEqual, right)
+			} else {
+				Expr::Binary(Box::new(expr), BinaryOp::Equal, right)
+			};
 		}
 
 		Ok(expr)
@@ -93,9 +98,19 @@ impl Parser {
 			TokenType::Less,
 			TokenType::LessEqual,
 		]) {
-			let operator = self.previous().clone();
-			let right = Box::new(self.term()?);
-			expr = Expr::Binary(Box::new(expr), operator, right)
+			let typ = self.previous().typ;
+			let right = Box::new(self.comparison()?);
+
+			expr = Expr::Binary(
+				Box::new(expr),
+				match typ {
+					TokenType::Greater => BinaryOp::Greater,
+					TokenType::GreaterEqual => BinaryOp::GreaterEqual,
+					TokenType::Less => BinaryOp::Less,
+					_ => BinaryOp::LessEqual,
+				},
+				right,
+			);
 		}
 
 		Ok(expr)
@@ -106,9 +121,14 @@ impl Parser {
 		let mut expr = self.factor()?;
 
 		while self.matches_any(&[TokenType::Plus, TokenType::Minus]) {
-			let operator = self.previous().clone();
-			let right = Box::new(self.factor()?);
-			expr = Expr::Binary(Box::new(expr), operator, right);
+			let typ = self.previous().typ;
+			let right = Box::new(self.comparison()?);
+
+			expr = if typ == TokenType::Plus {
+				Expr::Binary(Box::new(expr), BinaryOp::Plus, right)
+			} else {
+				Expr::Binary(Box::new(expr), BinaryOp::Minus, right)
+			};
 		}
 
 		Ok(expr)
@@ -119,9 +139,14 @@ impl Parser {
 		let mut expr = self.unary()?;
 
 		while self.matches_any(&[TokenType::Plus, TokenType::Minus]) {
-			let operator = self.previous().clone();
-			let right = Box::new(self.unary()?);
-			expr = Expr::Binary(Box::new(expr), operator, right);
+			let typ = self.previous().typ;
+			let right = Box::new(self.comparison()?);
+
+			expr = if typ == TokenType::Plus {
+				Expr::Binary(Box::new(expr), BinaryOp::Plus, right)
+			} else {
+				Expr::Binary(Box::new(expr), BinaryOp::Minus, right)
+			};
 		}
 
 		Ok(expr)

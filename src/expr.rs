@@ -1,9 +1,8 @@
 use crate::literal::Literal;
-use crate::token::Token;
 
 #[derive(Debug)]
 pub enum Expr {
-	Binary(Box<Expr>, Token /* BinaryOp */, Box<Expr>),
+	Binary(Box<Expr>, BinaryOp, Box<Expr>),
 	Unary(UnaryOp, Box<Expr>),
 	Literal(Literal),
 	Group(Box<Expr>),
@@ -13,4 +12,16 @@ pub enum Expr {
 pub enum UnaryOp {
 	Neg,
 	Not,
+}
+
+#[derive(Debug)]
+pub enum BinaryOp {
+	Equal,
+	NotEqual,
+	Greater,
+	GreaterEqual,
+	Less,
+	LessEqual,
+	Plus,
+	Minus,
 }
