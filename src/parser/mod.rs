@@ -56,7 +56,7 @@ impl Parser {
 impl Parser {
 	/// statement => expression ("\n" | ";" | EOF)
 	fn statement(&mut self) -> Result<Option<Expr>, ParseError> {
-		while self.matches(&[TokenType::NewLine]) {
+		while self.matches(TokenType::NewLine) {
 			self.advance();
 		}
 
@@ -77,7 +77,7 @@ impl Parser {
 	fn equality(&mut self) -> Result<Expr, ParseError> {
 		let mut expr = self.comparison()?;
 
-		while self.matches(&[TokenType::BangEqual, TokenType::EqualEqual]) {
+		while self.matches_any(&[TokenType::BangEqual, TokenType::EqualEqual]) {
 			let operator = self.previous().clone();
 			let right = Box::new(self.comparison()?);
 			expr = Expr::Binary(Box::new(expr), operator, right);
@@ -90,7 +90,7 @@ impl Parser {
 	fn comparison(&mut self) -> Result<Expr, ParseError> {
 		let mut expr = self.term()?;
 
-		while self.matches(&[
+		while self.matches_any(&[
 			TokenType::Greater,
 			TokenType::GreaterEqual,
 			TokenType::Less,
@@ -108,7 +108,7 @@ impl Parser {
 	fn term(&mut self) -> Result<Expr, ParseError> {
 		let mut expr = self.factor()?;
 
-		while self.matches(&[TokenType::Plus, TokenType::Minus]) {
+		while self.matches_any(&[TokenType::Plus, TokenType::Minus]) {
 			let operator = self.previous().clone();
 			let right = Box::new(self.factor()?);
 			expr = Expr::Binary(Box::new(expr), operator, right);
@@ -121,7 +121,7 @@ impl Parser {
 	fn factor(&mut self) -> Result<Expr, ParseError> {
 		let mut expr = self.unary()?;
 
-		while self.matches(&[TokenType::Plus, TokenType::Minus]) {
+		while self.matches_any(&[TokenType::Plus, TokenType::Minus]) {
 			let operator = self.previous().clone();
 			let right = Box::new(self.unary()?);
 			expr = Expr::Binary(Box::new(expr), operator, right);
@@ -132,7 +132,7 @@ impl Parser {
 
 	/// unary => ("!" | "-") unary
 	fn unary(&mut self) -> Result<Expr, ParseError> {
-		if self.matches(&[TokenType::Bang, TokenType::Minus]) {
+		if self.matches_any(&[TokenType::Bang, TokenType::Minus]) {
 			let operator = self.previous().clone();
 			let right = Box::new(self.unary()?);
 			return Ok(Expr::Unary(operator, right));
@@ -143,17 +143,17 @@ impl Parser {
 
 	/// primary => "true" | "false" | "nil" | NUMBER | STRING | "(" expression ")"
 	fn primary(&mut self) -> Result<Expr, ParseError> {
-		if self.matches(&[TokenType::False]) {
+		if self.matches(TokenType::False) {
 			return Ok(Expr::Literal(expr::Literal::False));
 		}
-		if self.matches(&[TokenType::True]) {
+		if self.matches(TokenType::True) {
 			return Ok(Expr::Literal(expr::Literal::True));
 		}
-		if self.matches(&[TokenType::Nil]) {
+		if self.matches(TokenType::Nil) {
 			return Ok(Expr::Literal(expr::Literal::Nil));
 		}
 
-		if self.matches(&[TokenType::Number, TokenType::String]) {
+		if self.matches_any(&[TokenType::Number, TokenType::String]) {
 			return match self
 				.previous()
 				.literal
@@ -166,7 +166,7 @@ impl Parser {
 			};
 		}
 
-		if self.matches(&[TokenType::LeftParen]) {
+		if self.matches(TokenType::LeftParen) {
 			let expr = Box::new(self.expression()?);
 			self.consume(TokenType::RightParen, "Expected closing `)`")?;
 			return Ok(Expr::Group(expr));
@@ -189,12 +189,20 @@ impl Parser {
 		ParseError::token_mismatch(self.peek(), error_msg)
 	}
 
-	fn matches(&mut self, types: &[TokenType]) -> bool {
+	fn matches_any(&mut self, types: &[TokenType]) -> bool {
 		for typ in types {
-			if self.check(*typ) {
-				self.advance();
+			if self.matches(*typ) {
 				return true;
 			}
+		}
+
+		false
+	}
+
+	fn matches(&mut self, typ: TokenType) -> bool {
+		if self.check(typ) {
+			self.advance();
+			return true;
 		}
 
 		false
