@@ -10,8 +10,8 @@ mod token;
 use lexer::Lexer;
 
 fn run(input: String) {
-	let mut lexer = Lexer::default();
-	let mut parser = Parser::default();
+	let mut lexer = Lexer::new();
+	let mut parser = Parser::new();
 
 	match lexer.scan(input) {
 		Ok(tokens) => {

@@ -1,5 +1,5 @@
 use crate::expr::Expr;
-use crate::token::{Literal, Token, TokenType};
+use crate::token::{Token, TokenType};
 
 mod error;
 use error::*;
@@ -10,17 +10,15 @@ pub struct Parser {
 	current: usize,
 }
 
-impl Default for Parser {
-	fn default() -> Self {
+impl Parser {
+	pub fn new() -> Self {
 		Self {
 			tokens: Vec::new(),
 			errors: Vec::new(),
 			current: 0,
 		}
 	}
-}
 
-impl Parser {
 	pub fn parse(&mut self, tokens: Vec<Token>) -> Result<Vec<Expr>, &[ParseError]> {
 		self.tokens = tokens;
 		self.errors.clear();
@@ -148,18 +146,13 @@ impl Parser {
 			TokenType::Number,
 			TokenType::String,
 		]) {
-			return match self
-				.previous()
-				.literal
-				.clone()
-				.expect("Literal has no value!")
-			{
-				// TODO: Remove this strange double matching
-				Literal::True => Ok(Expr::Literal(Literal::True)),
-				Literal::False => Ok(Expr::Literal(Literal::False)),
-				Literal::String(x) => Ok(Expr::Literal(Literal::String(x))),
-				Literal::Number(x) => Ok(Expr::Literal(Literal::Number(x))),
-			};
+			return Ok(Expr::Literal(
+				self
+					.previous()
+					.literal
+					.clone()
+					.expect("Literal has no value!"),
+			));
 		}
 
 		if self.matches(TokenType::LeftParen) {

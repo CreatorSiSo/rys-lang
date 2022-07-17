@@ -55,8 +55,8 @@ pub struct Lexer {
 	current: usize,
 }
 
-impl Default for Lexer {
-	fn default() -> Self {
+impl Lexer {
+	pub fn new() -> Self {
 		Self {
 			source: Vec::new(),
 			tokens: Vec::new(),
@@ -66,9 +66,7 @@ impl Default for Lexer {
 			current: 0,
 		}
 	}
-}
 
-impl Lexer {
 	pub fn scan(&mut self, input: String) -> Result<&[Token], &[Error]> {
 		self.errors.clear();
 		self.line = 1;
