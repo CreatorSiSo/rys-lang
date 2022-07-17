@@ -27,19 +27,7 @@ impl Interpreter {
 			(Not, True) => Ok(False),
 			(Not, False) => Ok(True),
 			(Neg, Number(n)) => Ok(Number(-n)),
-
-			(Neg, True | False) => {
-				RuntimeError::forbidden_type("Cannot apply unary operator `-` to `bool`")
-			}
-			(Not, Number(_)) => {
-				RuntimeError::forbidden_type("Cannot apply unary operator `!` to `number`")
-			}
-			(Neg, String(_)) => {
-				RuntimeError::forbidden_type("Cannot apply unary operator `-` to `string`")
-			}
-			(Not, String(_)) => {
-				RuntimeError::forbidden_type("Cannot apply unary operator `!` to `string`")
-			}
+			(op, literal) => RuntimeError::unary(op, literal),
 		}
 	}
 
@@ -47,6 +35,7 @@ impl Interpreter {
 		let left = Self::evaluate(*expr_l)?;
 		let right = Self::evaluate(*expr_r)?;
 
+		// TODO: Clean this up!
 		match op {
 			Equal => Ok(if left == right { True } else { False }),
 			NotEqual => Ok(if left != right { True } else { False }),

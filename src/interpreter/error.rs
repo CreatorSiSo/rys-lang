@@ -1,4 +1,4 @@
-use crate::literal::Literal;
+use crate::{expr::UnaryOp, literal::Literal};
 
 #[derive(Debug)]
 pub enum RuntimeError {
@@ -7,8 +7,15 @@ pub enum RuntimeError {
 }
 
 impl RuntimeError {
-	pub fn forbidden_type<T>(msg: &str) -> Result<T, Self> {
-		Err(Self::ForbiddenType(msg.into()))
+	pub fn unary<T>(op: UnaryOp, right: Literal) -> Result<T, Self> {
+		Err(Self::ForbiddenType(format!(
+			"Cannot apply unary operator `{}` to `{}`",
+			match op {
+				UnaryOp::Neg => "-",
+				UnaryOp::Not => "!",
+			},
+			right.to_type_string(),
+		)))
 	}
 
 	pub fn comparison<T>(left: Literal, right: Literal) -> Result<T, Self> {
