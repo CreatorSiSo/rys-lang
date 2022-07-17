@@ -14,7 +14,7 @@ impl Error {
 	}
 }
 
-const KEYWORDS: [(&str, TokenType); 16] = [
+const KEYWORDS: [(&str, TokenType); 15] = [
 	("and", TokenType::And),
 	("struct", TokenType::Struct),
 	("else", TokenType::Else),
@@ -22,7 +22,6 @@ const KEYWORDS: [(&str, TokenType); 16] = [
 	("for", TokenType::For),
 	("fun", TokenType::Fun),
 	("if", TokenType::If),
-	("nil", TokenType::Nil),
 	("or", TokenType::Or),
 	("print", TokenType::Print),
 	("return", TokenType::Return),

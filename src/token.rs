@@ -39,7 +39,6 @@ pub enum TokenType {
 	Fun,
 	For,
 	If,
-	Nil,
 	Or,
 	Print,
 	Return,

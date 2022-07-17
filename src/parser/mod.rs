@@ -141,16 +141,13 @@ impl Parser {
 		self.primary()
 	}
 
-	/// primary => "true" | "false" | "nil" | NUMBER | STRING | "(" expression ")"
+	/// primary => "(" expression ")", NUMBER | STRING | "true" | "false"
 	fn primary(&mut self) -> Result<Expr, ParseError> {
 		if self.matches(TokenType::False) {
 			return Ok(Expr::Literal(expr::Literal::False));
 		}
 		if self.matches(TokenType::True) {
 			return Ok(Expr::Literal(expr::Literal::True));
-		}
-		if self.matches(TokenType::Nil) {
-			return Ok(Expr::Literal(expr::Literal::Nil));
 		}
 
 		if self.matches_any(&[TokenType::Number, TokenType::String]) {
@@ -174,7 +171,7 @@ impl Parser {
 
 		ParseError::token_mismatch(
 			self.advance(),
-			"Expected one of Number, String, `true`, `false`, `nil`",
+			"Expected expression, number, string, `true` or `false`",
 		)
 	}
 }

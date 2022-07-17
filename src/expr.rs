@@ -19,5 +19,4 @@ pub enum Literal {
 	String(String),
 	True,
 	False,
-	Nil,
 }
