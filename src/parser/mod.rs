@@ -1,6 +1,5 @@
-use crate::expr::{self, Expr};
-use crate::lexer;
-use crate::token::*;
+use crate::expr::Expr;
+use crate::token::{Literal, Token, TokenType};
 
 mod error;
 use error::*;
@@ -156,10 +155,10 @@ impl Parser {
 				.expect("Literal has no value!")
 			{
 				// TODO: Remove this strange double matching
-				lexer::Literal::True => Ok(Expr::Literal(expr::Literal::True)),
-				lexer::Literal::False => Ok(Expr::Literal(expr::Literal::False)),
-				lexer::Literal::String(x) => Ok(Expr::Literal(expr::Literal::String(x))),
-				lexer::Literal::Number(x) => Ok(Expr::Literal(expr::Literal::Number(x))),
+				Literal::True => Ok(Expr::Literal(Literal::True)),
+				Literal::False => Ok(Expr::Literal(Literal::False)),
+				Literal::String(x) => Ok(Expr::Literal(Literal::String(x))),
+				Literal::Number(x) => Ok(Expr::Literal(Literal::Number(x))),
 			};
 		}
 

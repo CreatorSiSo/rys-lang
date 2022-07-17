@@ -1,4 +1,4 @@
-use crate::token::*;
+use crate::token::{Literal, Token};
 
 #[derive(Debug)]
 pub enum Expr {
@@ -12,11 +12,3 @@ pub enum Expr {
 // 	Negate,
 // 	Not,
 // }
-
-#[derive(Debug)]
-pub enum Literal {
-	Number(f64),
-	String(String),
-	True,
-	False,
-}

@@ -1,4 +1,4 @@
-use crate::token::*;
+use crate::token::{Literal, Token, TokenType};
 use std::fmt::Display;
 
 #[derive(Debug)]
@@ -42,25 +42,6 @@ impl Display for Token {
 			write!(f, "({})", value)?
 		}
 		Ok(())
-	}
-}
-
-#[derive(Debug, Clone)]
-pub enum Literal {
-	True,
-	False,
-	String(String),
-	Number(f64),
-}
-
-impl Display for Literal {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		match self {
-			Literal::True => write!(f, "true"),
-			Literal::False => write!(f, "false"),
-			Literal::String(value) => write!(f, "{value}"),
-			Literal::Number(value) => write!(f, "{value}"),
-		}
 	}
 }
 
