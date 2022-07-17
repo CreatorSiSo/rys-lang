@@ -1,4 +1,5 @@
-use crate::token::{Literal, Token, TokenType};
+use crate::literal::Literal;
+use crate::token::{Token, TokenType};
 use std::fmt::Display;
 
 #[derive(Debug)]
