@@ -47,6 +47,8 @@ impl Display for Token {
 
 #[derive(Debug, Clone)]
 pub enum Literal {
+	True,
+	False,
 	String(String),
 	Number(f64),
 }
@@ -54,6 +56,8 @@ pub enum Literal {
 impl Display for Literal {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
+			Literal::True => write!(f, "true"),
+			Literal::False => write!(f, "false"),
 			Literal::String(value) => write!(f, "{value}"),
 			Literal::Number(value) => write!(f, "{value}"),
 		}
@@ -187,8 +191,13 @@ impl Lexer {
 			.map(|c| c.to_string())
 			.collect();
 
-		match KEYWORDS.iter().find(|(key, _)| *key == text) {
-			Some((_, token_type)) => self.push_token(*token_type, None),
+		match KEYWORDS
+			.iter()
+			.find_map(|(key, token_type)| if key == &text { Some(token_type) } else { None })
+		{
+			Some(TokenType::True) => self.push_token(TokenType::True, Some(Literal::True)),
+			Some(TokenType::False) => self.push_token(TokenType::True, Some(Literal::False)),
+			Some(token_type) => self.push_token(*token_type, None),
 			None => self.push_token(TokenType::Identifier, None),
 		}
 	}

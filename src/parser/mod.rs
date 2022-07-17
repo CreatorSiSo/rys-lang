@@ -143,14 +143,12 @@ impl Parser {
 
 	/// primary => "(" expression ")", NUMBER | STRING | "true" | "false"
 	fn primary(&mut self) -> Result<Expr, ParseError> {
-		if self.matches(TokenType::False) {
-			return Ok(Expr::Literal(expr::Literal::False));
-		}
-		if self.matches(TokenType::True) {
-			return Ok(Expr::Literal(expr::Literal::True));
-		}
-
-		if self.matches_any(&[TokenType::Number, TokenType::String]) {
+		if self.matches_any(&[
+			TokenType::True,
+			TokenType::False,
+			TokenType::Number,
+			TokenType::String,
+		]) {
 			return match self
 				.previous()
 				.literal
@@ -158,6 +156,8 @@ impl Parser {
 				.expect("Literal has no value!")
 			{
 				// TODO: Remove this strange double matching
+				lexer::Literal::True => Ok(Expr::Literal(expr::Literal::True)),
+				lexer::Literal::False => Ok(Expr::Literal(expr::Literal::False)),
 				lexer::Literal::String(x) => Ok(Expr::Literal(expr::Literal::String(x))),
 				lexer::Literal::Number(x) => Ok(Expr::Literal(expr::Literal::Number(x))),
 			};
