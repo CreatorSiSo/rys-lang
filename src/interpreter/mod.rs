@@ -1,8 +1,4 @@
-use crate::expr::{
-	BinaryOp::{self, *},
-	Expr,
-	UnaryOp::{self, *},
-};
+use crate::expr::{BinaryOp, Expr, UnaryOp};
 use crate::literal::Literal::{self, *};
 
 mod error;
@@ -24,9 +20,9 @@ impl Interpreter {
 		let right = Self::evaluate(*expr)?;
 
 		match (op, right) {
-			(Not, True) => Ok(False),
-			(Not, False) => Ok(True),
-			(Neg, Number(n)) => Ok(Number(-n)),
+			(UnaryOp::Not, True) => Ok(False),
+			(UnaryOp::Not, False) => Ok(True),
+			(UnaryOp::Neg, Number(n)) => Ok(Number(-n)),
 			(op, literal) => RuntimeError::unary(op, literal),
 		}
 	}
@@ -37,9 +33,9 @@ impl Interpreter {
 
 		// TODO: Clean this up!
 		match op {
-			Equal => Ok(if left == right { True } else { False }),
-			NotEqual => Ok(if left != right { True } else { False }),
-			Greater => {
+			BinaryOp::Equal => Ok(if left == right { True } else { False }),
+			BinaryOp::NotEqual => Ok(if left != right { True } else { False }),
+			BinaryOp::Greater => {
 				if let Number(l) = left {
 					if let Number(r) = right {
 						return Ok(if l > r { True } else { False });
@@ -48,7 +44,7 @@ impl Interpreter {
 
 				RuntimeError::comparison(left, right)
 			}
-			GreaterEqual => {
+			BinaryOp::GreaterEqual => {
 				if let Number(l) = left {
 					if let Number(r) = right {
 						return Ok(if l >= r { True } else { False });
@@ -57,7 +53,7 @@ impl Interpreter {
 
 				RuntimeError::comparison(left, right)
 			}
-			Less => {
+			BinaryOp::Less => {
 				if let Number(l) = left {
 					if let Number(r) = right {
 						return Ok(if l < r { True } else { False });
@@ -66,7 +62,7 @@ impl Interpreter {
 
 				RuntimeError::comparison(left, right)
 			}
-			LessEqual => {
+			BinaryOp::LessEqual => {
 				if let Number(l) = left {
 					if let Number(r) = right {
 						return Ok(if l <= r { True } else { False });
@@ -75,7 +71,7 @@ impl Interpreter {
 
 				RuntimeError::comparison(left, right)
 			}
-			Plus => match (&left, &right) {
+			BinaryOp::Plus => match (&left, &right) {
 				(Number(l), Number(r)) => return Ok(Number(l + r)),
 				(Number(l), String(r)) => {
 					let mut value = l.to_string();
@@ -112,7 +108,7 @@ impl Interpreter {
 				}
 				_ => RuntimeError::addition(left, right),
 			},
-			Minus => {
+			BinaryOp::Minus => {
 				if let Number(l) = left {
 					if let Number(r) = right {
 						return Ok(Number(l - r));
