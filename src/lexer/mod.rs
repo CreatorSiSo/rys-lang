@@ -1,18 +1,8 @@
 use crate::literal::Literal;
 use crate::token::{Token, TokenType};
 
-#[derive(Debug)]
-pub struct Error {
-	pub msg: String,
-	pub line: usize,
-	// pub col: u64,
-}
-
-impl Error {
-	pub fn new(msg: String, line: usize) -> Self {
-		Self { msg, line }
-	}
-}
+mod error;
+use error::LexerError;
 
 const KEYWORDS: [(&str, TokenType); 15] = [
 	("and", TokenType::And),
@@ -36,7 +26,7 @@ pub struct Lexer {
 	// TODO: Should I use a Vec<u8> insted of Vec<char>?
 	source: Vec<char>,
 	tokens: Vec<Token>,
-	errors: Vec<Error>,
+	errors: Vec<error::LexerError>,
 	line: usize,
 	start: usize,
 	current: usize,
@@ -54,7 +44,7 @@ impl Lexer {
 		}
 	}
 
-	pub fn scan(&mut self, input: String) -> Result<&[Token], &[Error]> {
+	pub fn scan(&mut self, input: String) -> Result<&[Token], &[LexerError]> {
 		self.errors.clear();
 		self.line = 1;
 		self.source = input.chars().collect();
@@ -80,7 +70,7 @@ impl Lexer {
 		}
 	}
 
-	fn scan_token(&mut self) -> Result<(), Error> {
+	fn scan_token(&mut self) -> Result<(), LexerError> {
 		let char = self.advance();
 		match char {
 			'\n' => {
@@ -139,7 +129,12 @@ impl Lexer {
 			'"' => self.string(),
 			'0'..='9' => self.number(),
 			c if c.is_alphabetic() => self.identifier(),
-			c => return Err(Error::new(format!("Unexpected character `{c}`"), self.line)),
+			c => {
+				return Err(LexerError::new(
+					format!("Unexpected character `{c}`"),
+					self.line,
+				))
+			}
 		};
 		Ok(())
 	}
@@ -188,9 +183,10 @@ impl Lexer {
 		}
 
 		if self.is_at_end() {
-			self
-				.errors
-				.push(Error::new("Unterminated string!".into(), line_at_start));
+			self.errors.push(LexerError::new(
+				"Unterminated string!".into(),
+				line_at_start,
+			));
 			return;
 		}
 
@@ -228,7 +224,7 @@ impl Lexer {
 			Ok(number) => self.push_token(TokenType::Number, Some(Literal::Number(number))),
 			Err(err) => self
 				.errors
-				.push(Error::new(format!("{:?}", err), self.line)),
+				.push(LexerError::new(format!("{:?}", err), self.line)),
 		}
 	}
 
