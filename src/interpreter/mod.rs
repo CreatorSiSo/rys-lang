@@ -71,7 +71,7 @@ impl Interpreter {
 
 				RuntimeError::comparison(left, right)
 			}
-			BinaryOp::Plus => match (&left, &right) {
+			BinaryOp::Add => match (&left, &right) {
 				(Number(l), Number(r)) => return Ok(Number(l + r)),
 				(Number(l), String(r)) => {
 					let mut value = l.to_string();
@@ -108,14 +108,36 @@ impl Interpreter {
 				}
 				_ => RuntimeError::addition(left, right),
 			},
-			BinaryOp::Minus => {
+			BinaryOp::Substract => {
 				if let Number(l) = left {
 					if let Number(r) = right {
 						return Ok(Number(l - r));
 					}
 				}
 
-				RuntimeError::subtraction(left, right)
+				RuntimeError::substraction(left, right)
+			}
+			BinaryOp::Multiply => {
+				if let Number(l) = left {
+					if let Number(r) = right {
+						return Ok(Number(l * r));
+					}
+				}
+
+				RuntimeError::multiplication(left, right)
+			}
+			BinaryOp::Divide => {
+				if let Number(l) = left {
+					if let Number(r) = right {
+						return if r == 0f64 {
+							Err(RuntimeError::DivideByZero)
+						} else {
+							Ok(Number(l / r))
+						};
+					}
+				}
+
+				RuntimeError::division(left, right)
 			}
 		}
 	}

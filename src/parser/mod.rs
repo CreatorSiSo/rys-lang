@@ -51,7 +51,7 @@ impl Parser {
 
 /// Grammar definition
 impl Parser {
-	/// statement => expression ("\n" | ";" | EOF)
+	/// statement => expression* ("\n" | ";") EOF
 	fn statement(&mut self) -> Result<Option<Expr>, ParseError> {
 		while self.matches(TokenType::NewLine) {
 			self.advance();
@@ -99,7 +99,7 @@ impl Parser {
 			TokenType::LessEqual,
 		]) {
 			let typ = self.previous().typ;
-			let right = Box::new(self.comparison()?);
+			let right = Box::new(self.term()?);
 
 			expr = Expr::Binary(
 				Box::new(expr),
@@ -122,12 +122,12 @@ impl Parser {
 
 		while self.matches_any(&[TokenType::Plus, TokenType::Minus]) {
 			let typ = self.previous().typ;
-			let right = Box::new(self.comparison()?);
+			let right = Box::new(self.factor()?);
 
 			expr = if typ == TokenType::Plus {
-				Expr::Binary(Box::new(expr), BinaryOp::Plus, right)
+				Expr::Binary(Box::new(expr), BinaryOp::Add, right)
 			} else {
-				Expr::Binary(Box::new(expr), BinaryOp::Minus, right)
+				Expr::Binary(Box::new(expr), BinaryOp::Substract, right)
 			};
 		}
 
@@ -138,14 +138,14 @@ impl Parser {
 	fn factor(&mut self) -> Result<Expr, ParseError> {
 		let mut expr = self.unary()?;
 
-		while self.matches_any(&[TokenType::Plus, TokenType::Minus]) {
+		while self.matches_any(&[TokenType::Star, TokenType::Slash]) {
 			let typ = self.previous().typ;
-			let right = Box::new(self.comparison()?);
+			let right = Box::new(self.unary()?);
 
-			expr = if typ == TokenType::Plus {
-				Expr::Binary(Box::new(expr), BinaryOp::Plus, right)
+			expr = if typ == TokenType::Star {
+				Expr::Binary(Box::new(expr), BinaryOp::Multiply, right)
 			} else {
-				Expr::Binary(Box::new(expr), BinaryOp::Minus, right)
+				Expr::Binary(Box::new(expr), BinaryOp::Divide, right)
 			};
 		}
 

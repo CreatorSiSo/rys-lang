@@ -14,6 +14,7 @@ pub enum UnaryOp {
 	Not,
 }
 
+// TODO: Maybe add power
 #[derive(Debug)]
 pub enum BinaryOp {
 	Equal,
@@ -22,6 +23,8 @@ pub enum BinaryOp {
 	GreaterEqual,
 	Less,
 	LessEqual,
-	Plus,
-	Minus,
+	Add,
+	Substract,
+	Multiply,
+	Divide,
 }
