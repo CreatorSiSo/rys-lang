@@ -26,13 +26,13 @@ fn run(input: String) {
 
 			println!("\n\n--- Parser ---");
 			match parser.parse(tokens.to_vec()) {
-				Ok(statements) => {
-					println!("{:#?}", statements);
+				Ok(ast) => {
+					println!("{:#?}", ast);
 
 					println!("\n--- Interpreter ---");
-					// TODO: Eval entire script
-					for statement in statements {
-						println!("{:?}", Interpreter::evaluate(statement));
+					match Interpreter::evaluate(ast) {
+						Ok(_) => {}
+						Err(err) => println!("Runtime Error: {:?}", err),
 					}
 				}
 				Err(errors) => errors.iter().for_each(|err| println!("{err}")),

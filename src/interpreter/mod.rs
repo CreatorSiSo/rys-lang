@@ -7,11 +7,23 @@ use error::RuntimeError;
 pub struct Interpreter {}
 
 impl Interpreter {
-	pub fn evaluate(stmt: Stmt) -> Result<Literal, RuntimeError> {
-		match stmt {
-			Stmt::Expr(expr) => Self::expr(expr),
-			Stmt::Print(expr) => Self::expr(expr),
+	pub fn evaluate(ast: Vec<Stmt>) -> Result<(), RuntimeError> {
+		for statement in ast {
+			Self::statement(statement)?;
 		}
+		Ok(())
+	}
+
+	pub fn statement(stmt: Stmt) -> Result<(), RuntimeError> {
+		match stmt {
+			Stmt::Expr(expr) => {
+				Self::expr(expr)?;
+			}
+			Stmt::Print(expr) => {
+				println!("{}", Self::expr(expr)?);
+			}
+		}
+		Ok(())
 	}
 
 	pub fn expr(expr: Expr) -> Result<Literal, RuntimeError> {
