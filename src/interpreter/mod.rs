@@ -6,11 +6,11 @@ mod error;
 use env::Env;
 use error::RuntimeError;
 
-pub struct Interpreter {
-	env: Env,
+pub struct Interpreter<'a> {
+	env: Env<'a>,
 }
 
-impl Interpreter {
+impl Interpreter<'_> {
 	pub fn new() -> Self {
 		Self { env: Env::new() }
 	}
@@ -22,7 +22,7 @@ impl Interpreter {
 		Ok(())
 	}
 
-	pub fn statement(&mut self, stmt: Stmt) -> Result<(), RuntimeError> {
+	fn statement(&mut self, stmt: Stmt) -> Result<(), RuntimeError> {
 		match stmt {
 			Stmt::Var {
 				name,
@@ -45,7 +45,7 @@ impl Interpreter {
 		Ok(())
 	}
 
-	pub fn expr(&mut self, expr: Expr) -> Result<Literal, RuntimeError> {
+	fn expr(&mut self, expr: Expr) -> Result<Literal, RuntimeError> {
 		Ok(match expr {
 			Expr::Var(name) => self.env.get(&name).cloned()?,
 			Expr::Assign(name, expr) => {
