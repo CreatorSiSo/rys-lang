@@ -1,4 +1,3 @@
-use interpreter::Interpreter;
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 use std::path::Path;
@@ -9,18 +8,22 @@ mod lexer;
 mod literal;
 mod parser;
 mod token;
+use interpreter::Interpreter;
 use lexer::Lexer;
 use parser::Parser;
+use token::TokenType;
 
 fn run(input: String) {
 	let mut lexer = Lexer::new();
 	let mut parser = Parser::new();
+	let mut interpreter = Interpreter::new();
 
 	match lexer.scan(input) {
 		Ok(tokens) => {
 			println!("--- Lexer ---");
 			tokens.iter().for_each(|token| match token.typ {
-				token::TokenType::NewLine => println!("·"),
+				TokenType::Semicolon => println!(";"),
+				TokenType::NewLine => println!("·"),
 				_ => print!("{token} "),
 			});
 
@@ -30,7 +33,7 @@ fn run(input: String) {
 					println!("{:#?}", ast);
 
 					println!("\n--- Interpreter ---");
-					if let Err(err) = Interpreter::evaluate(ast) {
+					if let Err(err) = interpreter.evaluate(ast) {
 						println!("Runtime Error: {:?}", err)
 					}
 				}

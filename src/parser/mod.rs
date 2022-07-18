@@ -46,10 +46,34 @@ impl Parser {
 			while self.matches(TokenType::NewLine) {
 				self.advance();
 			}
-			match self.statement() {
+			match self.declaration() {
 				Ok(stmt) => vec.push(stmt),
 				Err(err) => self.errors.push(err),
 			}
+		}
+	}
+
+	/// declaration => let_decl | statement
+	fn declaration(&mut self) -> Result<Stmt, ParseError> {
+		// "let" part of let_decl
+		if self.matches(TokenType::Let) {
+			return self.let_decl();
+		}
+		self.statement()
+	}
+
+	/// let_decl => "let" IDENTIFIER "=" expression ";"
+	fn let_decl(&mut self) -> Result<Stmt, ParseError> {
+		let name = self
+			.consume(TokenType::Identifier, "Expected variable name")?
+			.lexeme
+			.clone();
+		self.consume(TokenType::Equal, "Expected `=`")?;
+		let initializer = self.expression()?;
+		let next = self.advance();
+		match next.typ {
+			TokenType::Semicolon | TokenType::Eof => Ok(Stmt::Var(name, initializer)),
+			_ => ParseError::token_mismatch(next, "Expected `;`"),
 		}
 	}
 
@@ -67,7 +91,7 @@ impl Parser {
 		let next = self.advance();
 		match next.typ {
 			TokenType::Semicolon | TokenType::Eof => Ok(Stmt::Print(expr)),
-			_ => ParseError::token_mismatch(next, "Expected newline or `;`"),
+			_ => ParseError::token_mismatch(next, "Expected `;`"),
 		}
 	}
 
@@ -77,7 +101,7 @@ impl Parser {
 		let next = self.advance();
 		match next.typ {
 			TokenType::Semicolon | TokenType::Eof => Ok(Stmt::Expr(expr)),
-			_ => ParseError::token_mismatch(next, "Expected newline or `;`"),
+			_ => ParseError::token_mismatch(next, "Expected `;`"),
 		}
 	}
 
@@ -184,7 +208,7 @@ impl Parser {
 		self.primary()
 	}
 
-	/// primary => "(" expression ")", NUMBER | STRING | "true" | "false"
+	/// primary => "(" expression ")", IDENTIFIER, NUMBER | STRING | "true" | "false"
 	fn primary(&mut self) -> Result<Expr, ParseError> {
 		if self.matches_any(&[
 			TokenType::True,
@@ -207,9 +231,13 @@ impl Parser {
 			return Ok(Expr::Group(expr));
 		}
 
+		if self.matches(TokenType::Identifier) {
+			return Ok(Expr::Var(self.previous().lexeme.clone()));
+		}
+
 		ParseError::token_mismatch(
 			self.advance(),
-			"Expected expression, number, string, `true` or `false`",
+			"Expected expression, identifier, number, string, `true` or `false`",
 		)
 	}
 }

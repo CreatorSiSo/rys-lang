@@ -1,0 +1,6 @@
+let test = "Hello World";
+let two = 2 / 4 * (10 - 1);
+print test;
+
+let test = test + "!";
+print test + " " + two;

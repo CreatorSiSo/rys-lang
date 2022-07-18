@@ -4,6 +4,7 @@ use crate::literal::Literal;
 pub enum Stmt {
 	Expr(Expr),
 	Print(Expr),
+	Var(String, Expr),
 }
 
 #[derive(Debug)]
@@ -12,6 +13,7 @@ pub enum Expr {
 	Unary(UnaryOp, Box<Expr>),
 	Literal(Literal),
 	Group(Box<Expr>),
+	Var(String),
 }
 
 #[derive(Debug)]

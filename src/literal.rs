@@ -2,10 +2,10 @@ use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
-	Number(f64),
-	String(String),
 	True,
 	False,
+	Number(f64),
+	String(String),
 }
 
 impl Display for Literal {
@@ -13,8 +13,8 @@ impl Display for Literal {
 		match self {
 			Literal::True => write!(f, "true"),
 			Literal::False => write!(f, "false"),
-			Literal::String(value) => write!(f, "{value}"),
 			Literal::Number(value) => write!(f, "{value}"),
+			Literal::String(value) => write!(f, "{value}"),
 		}
 	}
 }
@@ -22,10 +22,10 @@ impl Display for Literal {
 impl Literal {
 	pub fn to_type_string(&self) -> String {
 		match self {
-			Literal::Number(_) => "number".into(),
-			Literal::String(_) => "string".into(),
 			Literal::True => "true".into(),
 			Literal::False => "false".into(),
+			Literal::Number(_) => "number".into(),
+			Literal::String(_) => "string".into(),
 		}
 	}
 }

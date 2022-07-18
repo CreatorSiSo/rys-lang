@@ -4,11 +4,18 @@ use crate::{expr::UnaryOp, literal::Literal};
 pub enum RuntimeError {
 	ForbiddenType(String),
 	TypeMismatch(String),
+	UndeclaredVar(String),
 	DivideByZero,
 }
 
 // TODO: Print line number as well
 impl RuntimeError {
+	pub fn undeclared_var<T>(name: &str) -> Result<T, Self> {
+		Err(Self::UndeclaredVar(format!(
+			"Variable `{name}` has not yet been declared"
+		)))
+	}
+
 	pub fn unary<T>(op: UnaryOp, right: Literal) -> Result<T, Self> {
 		Err(Self::ForbiddenType(format!(
 			"Cannot apply unary operator `{}` to `{}`",
