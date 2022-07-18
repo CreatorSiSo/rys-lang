@@ -19,9 +19,12 @@ impl Interpreter {
 			Stmt::Expr(expr) => {
 				Self::expr(expr)?;
 			}
-			Stmt::Print(expr) => {
-				println!("{}", Self::expr(expr)?);
-			}
+			Stmt::Print(expr) => match Self::expr(expr)? {
+				Number(n) => println!("{n}"),
+				String(s) => println!("\"{s}\""),
+				True => println!("true"),
+				False => println!("false"),
+			},
 		}
 		Ok(())
 	}

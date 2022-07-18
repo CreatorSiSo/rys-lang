@@ -30,9 +30,8 @@ fn run(input: String) {
 					println!("{:#?}", ast);
 
 					println!("\n--- Interpreter ---");
-					match Interpreter::evaluate(ast) {
-						Ok(_) => {}
-						Err(err) => println!("Runtime Error: {:?}", err),
+					if let Err(err) = Interpreter::evaluate(ast) {
+						println!("Runtime Error: {:?}", err)
 					}
 				}
 				Err(errors) => errors.iter().for_each(|err| println!("{err}")),
