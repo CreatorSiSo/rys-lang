@@ -9,6 +9,7 @@ pub enum Stmt {
 		initializer: Expr,
 		mutable: bool,
 	},
+	Block(Vec<Stmt>),
 }
 
 #[derive(Debug)]

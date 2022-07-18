@@ -53,7 +53,7 @@ impl Parser {
 		}
 	}
 
-	/// declaration => const_decl | statement
+	/// declaration => const_decl | mut_decl | statement
 	fn declaration(&mut self) -> Result<Stmt, ParseError> {
 		// "const" part of const_decl
 		if self.matches(TokenType::Const) {
@@ -110,7 +110,29 @@ impl Parser {
 		if self.matches(TokenType::Print) {
 			return self.print_stmt();
 		}
+		// block "{" declaration* "}"
+		if self.matches(TokenType::LeftBrace) {
+			return Ok(Stmt::Block(self.block()?));
+		}
 		self.expr_stmt()
+	}
+
+	/// block "{" declaration* "}"
+	fn block(&mut self) -> Result<Vec<Stmt>, ParseError> {
+		let mut statements = Vec::new();
+		loop {
+			if self.check(TokenType::RightBrace) || self.is_at_end() {
+				self.advance();
+				break Ok(statements);
+			}
+			while self.matches(TokenType::NewLine) {
+				self.advance();
+			}
+			match self.declaration() {
+				Ok(stmt) => statements.push(stmt),
+				Err(err) => self.errors.push(err),
+			}
+		}
 	}
 
 	fn print_stmt(&mut self) -> Result<Stmt, ParseError> {

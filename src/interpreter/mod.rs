@@ -6,16 +6,16 @@ mod error;
 use env::Env;
 use error::RuntimeError;
 
-pub struct Interpreter<'a> {
-	env: Env<'a>,
+pub struct Interpreter {
+	env: Env,
 }
 
-impl Interpreter<'_> {
+impl Interpreter {
 	pub fn new() -> Self {
 		Self { env: Env::new() }
 	}
 
-	pub fn evaluate(&mut self, ast: Vec<Stmt>) -> Result<(), RuntimeError> {
+	pub fn eval(&mut self, ast: Vec<Stmt>) -> Result<(), RuntimeError> {
 		for statement in ast {
 			self.statement(statement)?;
 		}
@@ -24,14 +24,6 @@ impl Interpreter<'_> {
 
 	fn statement(&mut self, stmt: Stmt) -> Result<(), RuntimeError> {
 		match stmt {
-			Stmt::Var {
-				name,
-				initializer,
-				mutable,
-			} => {
-				let value = self.expr(initializer)?;
-				self.env.declare(name, value, mutable);
-			}
 			Stmt::Expr(expr) => {
 				self.expr(expr)?;
 			}
@@ -41,13 +33,31 @@ impl Interpreter<'_> {
 				True => println!("true"),
 				False => println!("false"),
 			},
+			Stmt::Var {
+				name,
+				initializer,
+				mutable,
+			} => {
+				let value = self.expr(initializer)?;
+				self.env.declare(name, value, mutable);
+			}
+			Stmt::Block(statements) => self.eval_block(statements)?,
 		}
+		Ok(())
+	}
+
+	fn eval_block(&mut self, statements: Vec<Stmt>) -> Result<(), RuntimeError> {
+		self.env.push_scope();
+		for statement in statements {
+			self.statement(statement)?;
+		}
+		self.env.pop_scope();
 		Ok(())
 	}
 
 	fn expr(&mut self, expr: Expr) -> Result<Literal, RuntimeError> {
 		Ok(match expr {
-			Expr::Var(name) => self.env.get(&name).cloned()?,
+			Expr::Var(name) => self.env.get(&name)?.clone(),
 			Expr::Assign(name, expr) => {
 				let value = self.expr(*expr)?;
 				self.env.set(&name, value.clone())?;

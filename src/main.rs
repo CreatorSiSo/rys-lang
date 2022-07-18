@@ -33,7 +33,7 @@ fn run(input: String) {
 					println!("{:#?}", ast);
 
 					println!("\n--- Interpreter ---");
-					if let Err(err) = interpreter.evaluate(ast) {
+					if let Err(err) = interpreter.eval(ast) {
 						println!("Runtime Error: {:?}", err)
 					}
 				}
