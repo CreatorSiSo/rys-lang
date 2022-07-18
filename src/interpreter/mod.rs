@@ -80,46 +80,14 @@ impl Interpreter {
 		let left = self.expr(*expr_l)?;
 		let right = self.expr(*expr_r)?;
 
-		// TODO: Clean this up!
+		// TODO: Clean this up evme more!
 		match op {
 			BinaryOp::Equal => Ok(if left == right { True } else { False }),
 			BinaryOp::NotEqual => Ok(if left != right { True } else { False }),
-			BinaryOp::Greater => {
-				if let Number(l) = left {
-					if let Number(r) = right {
-						return Ok(if l > r { True } else { False });
-					}
-				}
-
-				RuntimeError::comparison(left, right)
-			}
-			BinaryOp::GreaterEqual => {
-				if let Number(l) = left {
-					if let Number(r) = right {
-						return Ok(if l >= r { True } else { False });
-					}
-				}
-
-				RuntimeError::comparison(left, right)
-			}
-			BinaryOp::Less => {
-				if let Number(l) = left {
-					if let Number(r) = right {
-						return Ok(if l < r { True } else { False });
-					}
-				}
-
-				RuntimeError::comparison(left, right)
-			}
-			BinaryOp::LessEqual => {
-				if let Number(l) = left {
-					if let Number(r) = right {
-						return Ok(if l <= r { True } else { False });
-					}
-				}
-
-				RuntimeError::comparison(left, right)
-			}
+			BinaryOp::Greater => Self::comparison(left, right, |l, r| l > r),
+			BinaryOp::GreaterEqual => Self::comparison(left, right, |l, r| l >= r),
+			BinaryOp::Less => Self::comparison(left, right, |l, r| l < r),
+			BinaryOp::LessEqual => Self::comparison(left, right, |l, r| l <= r),
 			BinaryOp::Add => match (&left, &right) {
 				(Number(l), Number(r)) => return Ok(Number(l + r)),
 				(Number(l), String(r)) => {
@@ -157,37 +125,42 @@ impl Interpreter {
 				}
 				_ => RuntimeError::addition(left, right),
 			},
-			BinaryOp::Substract => {
-				if let Number(l) = left {
-					if let Number(r) = right {
-						return Ok(Number(l - r));
-					}
-				}
+			BinaryOp::Sub => Self::algebraic(left, right, |l, r| l - r, RuntimeError::substraction),
+			BinaryOp::Mul => Self::algebraic(left, right, |l, r| l - r, RuntimeError::multiplication),
+			BinaryOp::Div if right == Number(0f64) => Err(RuntimeError::DivideByZero),
+			BinaryOp::Div => Self::algebraic(left, right, |l, r| l - r, RuntimeError::division),
+		}
+	}
 
-				RuntimeError::substraction(left, right)
-			}
-			BinaryOp::Multiply => {
-				if let Number(l) = left {
-					if let Number(r) = right {
-						return Ok(Number(l * r));
-					}
-				}
-
-				RuntimeError::multiplication(left, right)
-			}
-			BinaryOp::Divide => {
-				if let Number(l) = left {
-					if let Number(r) = right {
-						return if r == 0f64 {
-							Err(RuntimeError::DivideByZero)
-						} else {
-							Ok(Number(l / r))
-						};
-					}
-				}
-
-				RuntimeError::division(left, right)
+	fn comparison<F>(left: Literal, right: Literal, cmp_fn: F) -> Result<Literal, RuntimeError>
+	where
+		F: Fn(f64, f64) -> bool,
+	{
+		if let Number(l) = left {
+			if let Number(r) = right {
+				return Ok(if cmp_fn(l, r) { True } else { False });
 			}
 		}
+
+		RuntimeError::comparison(left, right)
+	}
+
+	fn algebraic<F, E>(
+		left: Literal,
+		right: Literal,
+		algebra_fn: F,
+		err: E,
+	) -> Result<Literal, RuntimeError>
+	where
+		F: Fn(f64, f64) -> f64,
+		E: Fn(Literal, Literal) -> Result<Literal, RuntimeError>,
+	{
+		if let Number(l) = left {
+			if let Number(r) = right {
+				return Ok(Number(algebra_fn(l, r)));
+			}
+		}
+
+		err(left, right)
 	}
 }

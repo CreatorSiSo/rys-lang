@@ -212,7 +212,7 @@ impl Parser {
 			expr = if typ == TokenType::Plus {
 				Expr::Binary(Box::new(expr), BinaryOp::Add, right)
 			} else {
-				Expr::Binary(Box::new(expr), BinaryOp::Substract, right)
+				Expr::Binary(Box::new(expr), BinaryOp::Sub, right)
 			};
 		}
 
@@ -228,9 +228,9 @@ impl Parser {
 			let right = Box::new(self.unary()?);
 
 			expr = if typ == TokenType::Star {
-				Expr::Binary(Box::new(expr), BinaryOp::Multiply, right)
+				Expr::Binary(Box::new(expr), BinaryOp::Mul, right)
 			} else {
-				Expr::Binary(Box::new(expr), BinaryOp::Divide, right)
+				Expr::Binary(Box::new(expr), BinaryOp::Div, right)
 			};
 		}
 

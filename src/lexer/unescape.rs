@@ -3,6 +3,8 @@ pub(crate) fn unescape(slice: &[char]) -> String {
 	let mut result = String::new();
 	loop {
 		if let Some(c) = iter.next() {
+			// TODO: Implement other escape codes
+			// https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_lexer/unescape.rs.html
 			if *c == '\\' {
 				match iter.peek() {
 					Some('t') => {

@@ -38,7 +38,7 @@ pub enum BinaryOp {
 	Less,
 	LessEqual,
 	Add,
-	Substract,
-	Multiply,
-	Divide,
+	Sub,
+	Mul,
+	Div,
 }
