@@ -24,8 +24,12 @@ impl Interpreter {
 
 	pub fn statement(&mut self, stmt: Stmt) -> Result<(), RuntimeError> {
 		match stmt {
-			Stmt::Var(name, initializer) => {
-				self.env.declare(name, self.expr(initializer)?);
+			Stmt::Var {
+				name,
+				initializer,
+				mutable,
+			} => {
+				self.env.declare(name, self.expr(initializer)?, mutable);
 			}
 			Stmt::Expr(expr) => {
 				self.expr(expr)?;

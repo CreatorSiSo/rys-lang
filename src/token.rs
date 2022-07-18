@@ -46,8 +46,10 @@ pub enum TokenType {
 	Super,
 	This,
 	True,
-	Let,
 	While,
+	Loop,
+	Const,
+	Mut,
 
 	Eof,
 }

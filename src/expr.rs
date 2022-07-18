@@ -4,7 +4,11 @@ use crate::literal::Literal;
 pub enum Stmt {
 	Expr(Expr),
 	Print(Expr),
-	Var(String, Expr),
+	Var {
+		name: String,
+		initializer: Expr,
+		mutable: bool,
+	},
 }
 
 #[derive(Debug)]

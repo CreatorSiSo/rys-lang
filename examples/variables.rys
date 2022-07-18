@@ -1,6 +1,10 @@
-let test = "Hello World";
-let two = 2 / 4 * (10 - 1);
+const test = "Hello World";
+mut two = 2 / 4 * (10 - 1);
 print test;
 
-let test = test + "!";
+const test = test + "!";
 print test + " " + two;
+
+print two;
+// two = 0;
+print two;

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use super::error::RuntimeError;
 
-pub struct Env(HashMap<String, Literal>);
+pub struct Env(HashMap<String, (Literal, bool)>);
 
 impl Env {
 	pub fn new() -> Self {
@@ -12,12 +12,12 @@ impl Env {
 
 	pub fn get(&self, name: &str) -> Result<&Literal, RuntimeError> {
 		match self.0.get(name) {
-			Some(value) => Ok(value),
+			Some((value, _)) => Ok(value),
 			None => RuntimeError::undeclared_var(name),
 		}
 	}
 
-	pub fn declare(&mut self, name: String, value: Literal) {
-		self.0.insert(name, value);
+	pub fn declare(&mut self, name: String, value: Literal, mutable: bool) {
+		self.0.insert(name, (value, mutable));
 	}
 }

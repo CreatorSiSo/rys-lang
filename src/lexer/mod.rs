@@ -4,7 +4,7 @@ use crate::token::{Token, TokenType};
 mod error;
 use error::LexerError;
 
-const KEYWORDS: [(&str, TokenType); 15] = [
+const KEYWORDS: [(&str, TokenType); 17] = [
 	("and", TokenType::And),
 	("struct", TokenType::Struct),
 	("else", TokenType::Else),
@@ -18,8 +18,10 @@ const KEYWORDS: [(&str, TokenType); 15] = [
 	("super", TokenType::Super),
 	("this", TokenType::This),
 	("true", TokenType::True),
-	("let", TokenType::Let),
 	("while", TokenType::While),
+	("loop", TokenType::Loop),
+	("const", TokenType::Const),
+	("mut", TokenType::Mut),
 ];
 
 pub struct Lexer {
@@ -78,7 +80,7 @@ impl Lexer {
 				// self.push_token(TokenType::NewLine, None);
 				self.line += 1;
 			}
-			'\t' | '\r' | ' ' => {}
+			'\t' | '\r' | ' ' => { /* Ignore whitespace */ }
 			';' => self.push_token(TokenType::Semicolon, None),
 			'(' => self.push_token(TokenType::LeftParen, None),
 			')' => self.push_token(TokenType::RightParen, None),

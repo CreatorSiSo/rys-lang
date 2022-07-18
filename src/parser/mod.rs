@@ -53,17 +53,21 @@ impl Parser {
 		}
 	}
 
-	/// declaration => let_decl | statement
+	/// declaration => const_decl | statement
 	fn declaration(&mut self) -> Result<Stmt, ParseError> {
-		// "let" part of let_decl
-		if self.matches(TokenType::Let) {
-			return self.let_decl();
+		// "const" part of const_decl
+		if self.matches(TokenType::Const) {
+			return self.const_decl();
+		}
+		// "mut" part of mut_decl
+		if self.matches(TokenType::Mut) {
+			return self.mut_decl();
 		}
 		self.statement()
 	}
 
-	/// let_decl => "let" IDENTIFIER "=" expression ";"
-	fn let_decl(&mut self) -> Result<Stmt, ParseError> {
+	/// const_decl => "let" IDENTIFIER "=" expression ";"
+	fn const_decl(&mut self) -> Result<Stmt, ParseError> {
 		let name = self
 			.consume(TokenType::Identifier, "Expected variable name")?
 			.lexeme
@@ -72,7 +76,30 @@ impl Parser {
 		let initializer = self.expression()?;
 		let next = self.advance();
 		match next.typ {
-			TokenType::Semicolon | TokenType::Eof => Ok(Stmt::Var(name, initializer)),
+			TokenType::Semicolon | TokenType::Eof => Ok(Stmt::Var {
+				name,
+				initializer,
+				mutable: false,
+			}),
+			_ => ParseError::token_mismatch(next, "Expected `;`"),
+		}
+	}
+
+	/// mut_decl => "let" IDENTIFIER "=" expression ";"
+	fn mut_decl(&mut self) -> Result<Stmt, ParseError> {
+		let name = self
+			.consume(TokenType::Identifier, "Expected variable name")?
+			.lexeme
+			.clone();
+		self.consume(TokenType::Equal, "Expected `=`")?;
+		let initializer = self.expression()?;
+		let next = self.advance();
+		match next.typ {
+			TokenType::Semicolon | TokenType::Eof => Ok(Stmt::Var {
+				name,
+				initializer,
+				mutable: true,
+			}),
 			_ => ParseError::token_mismatch(next, "Expected `;`"),
 		}
 	}

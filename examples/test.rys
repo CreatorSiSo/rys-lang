@@ -55,8 +55,10 @@ return
 super
 this
 true
-let
 while
+loop
+const
+mut
 
 /* /* */
 should be commented out
