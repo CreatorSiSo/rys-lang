@@ -44,7 +44,7 @@ impl Env {
 		for scope in self.iter_mut() {
 			match scope.get_mut(name) {
 				Some(var) => {
-					if var.mutable == false {
+					if !var.mutable {
 						return RuntimeError::assignment(name, new);
 					}
 					var.value = new;

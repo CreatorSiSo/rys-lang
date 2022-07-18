@@ -65,13 +65,13 @@ impl Interpreter {
 			}
 			Expr::Literal(literal) => literal,
 			Expr::Group(expr) => self.expr(*expr)?,
-			Expr::Unary(op, expr) => self.unary(op, expr)?,
-			Expr::Binary(expr_l, op, expr_r) => self.binary(expr_l, op, expr_r)?,
+			Expr::Unary(op, expr) => self.unary(op, *expr)?,
+			Expr::Binary(expr_l, op, expr_r) => self.binary(*expr_l, op, *expr_r)?,
 		})
 	}
 
-	fn unary(&mut self, op: UnaryOp, expr: Box<Expr>) -> Result<Literal, RuntimeError> {
-		let right = self.expr(*expr)?;
+	fn unary(&mut self, op: UnaryOp, expr: Expr) -> Result<Literal, RuntimeError> {
+		let right = self.expr(expr)?;
 
 		match (op, right) {
 			(UnaryOp::Not, True) => Ok(False),
@@ -81,14 +81,9 @@ impl Interpreter {
 		}
 	}
 
-	fn binary(
-		&mut self,
-		expr_l: Box<Expr>,
-		op: BinaryOp,
-		expr_r: Box<Expr>,
-	) -> Result<Literal, RuntimeError> {
-		let left = self.expr(*expr_l)?;
-		let right = self.expr(*expr_r)?;
+	fn binary(&mut self, expr_l: Expr, op: BinaryOp, expr_r: Expr) -> Result<Literal, RuntimeError> {
+		let left = self.expr(expr_l)?;
+		let right = self.expr(expr_r)?;
 
 		// TODO: Clean this up evme more!
 		match op {
@@ -99,10 +94,10 @@ impl Interpreter {
 			BinaryOp::Less => Self::comparison(left, right, |l, r| l < r),
 			BinaryOp::LessEqual => Self::comparison(left, right, |l, r| l <= r),
 			BinaryOp::Add => match (&left, &right) {
-				(Number(l), Number(r)) => return Ok(Number(l + r)),
+				(Number(l), Number(r)) => Ok(Number(l + r)),
 				(Number(l), String(r)) => {
 					let mut value = l.to_string();
-					value.push_str(&r);
+					value.push_str(r);
 					Ok(String(value))
 				}
 				(String(l), r) => {
@@ -125,12 +120,12 @@ impl Interpreter {
 				}
 				(True, String(inner)) => {
 					let mut value = "true".to_string();
-					value.push_str(&inner);
+					value.push_str(inner);
 					Ok(String(value))
 				}
 				(False, String(inner)) => {
 					let mut value = "false".to_string();
-					value.push_str(&inner);
+					value.push_str(inner);
 					Ok(String(value))
 				}
 				_ => RuntimeError::addition(left, right),
