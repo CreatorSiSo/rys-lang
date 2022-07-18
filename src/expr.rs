@@ -1,6 +1,12 @@
 use crate::literal::Literal;
 
 #[derive(Debug)]
+pub enum Stmt {
+	Expr(Expr),
+	Print(Expr),
+}
+
+#[derive(Debug)]
 pub enum Expr {
 	Binary(Box<Expr>, BinaryOp, Box<Expr>),
 	Unary(UnaryOp, Box<Expr>),

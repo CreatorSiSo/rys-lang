@@ -26,12 +26,13 @@ fn run(input: String) {
 
 			println!("\n\n--- Parser ---");
 			match parser.parse(tokens.to_vec()) {
-				Ok(expressions) => {
-					println!("{:#?}", expressions);
+				Ok(statements) => {
+					println!("{:#?}", statements);
 
 					println!("\n--- Interpreter ---");
-					for expression in expressions {
-						println!("{:?}", Interpreter::evaluate(expression));
+					// TODO: Eval entire script
+					for statement in statements {
+						println!("{:?}", Interpreter::evaluate(statement));
 					}
 				}
 				Err(errors) => errors.iter().for_each(|err| println!("{err}")),

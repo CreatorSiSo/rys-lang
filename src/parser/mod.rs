@@ -1,4 +1,4 @@
-use crate::expr::{BinaryOp, Expr, UnaryOp};
+use crate::expr::{BinaryOp, Expr, Stmt, UnaryOp};
 use crate::token::{Token, TokenType};
 
 mod error;
@@ -19,27 +19,12 @@ impl Parser {
 		}
 	}
 
-	pub fn parse(&mut self, tokens: Vec<Token>) -> Result<Vec<Expr>, &[ParseError]> {
+	pub fn parse(&mut self, tokens: Vec<Token>) -> Result<Vec<Stmt>, &[ParseError]> {
 		self.tokens = tokens;
 		self.errors.clear();
 		self.current = 0;
 
-		let statements = {
-			let mut vec = Vec::new();
-			loop {
-				if self.is_at_end() {
-					break vec;
-				}
-				match self.statement() {
-					Ok(maybe_stmt) => {
-						if let Some(stmt) = maybe_stmt {
-							vec.push(stmt)
-						}
-					}
-					Err(err) => self.errors.push(err),
-				}
-			}
-		};
+		let statements = self.program();
 
 		if self.errors.is_empty() {
 			Ok(statements)
@@ -51,17 +36,48 @@ impl Parser {
 
 /// Grammar definition
 impl Parser {
-	/// statement => expression* ("\n" | ";") EOF
-	fn statement(&mut self) -> Result<Option<Expr>, ParseError> {
-		while self.matches(TokenType::NewLine) {
-			self.advance();
+	// program => statement* EOF
+	fn program(&mut self) -> Vec<Stmt> {
+		let mut vec = Vec::new();
+		loop {
+			if self.is_at_end() {
+				break vec;
+			}
+			while self.matches(TokenType::NewLine) {
+				self.advance();
+			}
+			match self.statement() {
+				Ok(stmt) => vec.push(stmt),
+				Err(err) => self.errors.push(err),
+			}
 		}
+	}
 
+	/// statement => exprStmt | printStmt
+	fn statement(&mut self) -> Result<Stmt, ParseError> {
+		// print_stmt => "print" expression (";" | EOF)
+		if self.matches(TokenType::Print) {
+			return self.print_stmt();
+		}
+		self.expr_stmt()
+	}
+
+	fn print_stmt(&mut self) -> Result<Stmt, ParseError> {
 		let expr = self.expression()?;
-		let peek = self.peek();
-		match peek.typ {
-			TokenType::NewLine | TokenType::Semicolon | TokenType::Eof => Ok(Some(expr)),
-			_ => ParseError::token_mismatch(peek, "Expected newline or `;`"),
+		let next = self.advance();
+		match next.typ {
+			TokenType::Semicolon | TokenType::Eof => Ok(Stmt::Print(expr)),
+			_ => ParseError::token_mismatch(next, "Expected newline or `;`"),
+		}
+	}
+
+	/// expr_stmt => expression (";" | EOF)
+	fn expr_stmt(&mut self) -> Result<Stmt, ParseError> {
+		let expr = self.expression()?;
+		let next = self.advance();
+		match next.typ {
+			TokenType::Semicolon | TokenType::Eof => Ok(Stmt::Expr(expr)),
+			_ => ParseError::token_mismatch(next, "Expected newline or `;`"),
 		}
 	}
 

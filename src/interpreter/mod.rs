@@ -1,4 +1,4 @@
-use crate::expr::{BinaryOp, Expr, UnaryOp};
+use crate::expr::{BinaryOp, Expr, Stmt, UnaryOp};
 use crate::literal::Literal::{self, *};
 
 mod error;
@@ -7,17 +7,24 @@ use error::RuntimeError;
 pub struct Interpreter {}
 
 impl Interpreter {
-	pub fn evaluate(expr: Expr) -> Result<Literal, RuntimeError> {
+	pub fn evaluate(stmt: Stmt) -> Result<Literal, RuntimeError> {
+		match stmt {
+			Stmt::Expr(expr) => Self::expr(expr),
+			Stmt::Print(expr) => Self::expr(expr),
+		}
+	}
+
+	pub fn expr(expr: Expr) -> Result<Literal, RuntimeError> {
 		Ok(match expr {
 			Expr::Literal(literal) => literal,
-			Expr::Group(expr) => Self::evaluate(*expr)?,
+			Expr::Group(expr) => Self::expr(*expr)?,
 			Expr::Unary(op, expr) => Self::unary(op, expr)?,
 			Expr::Binary(expr_l, op, expr_r) => Self::binary(expr_l, op, expr_r)?,
 		})
 	}
 
 	fn unary(op: UnaryOp, expr: Box<Expr>) -> Result<Literal, RuntimeError> {
-		let right = Self::evaluate(*expr)?;
+		let right = Self::expr(*expr)?;
 
 		match (op, right) {
 			(UnaryOp::Not, True) => Ok(False),
@@ -28,8 +35,8 @@ impl Interpreter {
 	}
 
 	fn binary(expr_l: Box<Expr>, op: BinaryOp, expr_r: Box<Expr>) -> Result<Literal, RuntimeError> {
-		let left = Self::evaluate(*expr_l)?;
-		let right = Self::evaluate(*expr_r)?;
+		let left = Self::expr(*expr_l)?;
+		let right = Self::expr(*expr_r)?;
 
 		// TODO: Clean this up!
 		match op {

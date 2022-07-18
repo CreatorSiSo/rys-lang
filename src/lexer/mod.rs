@@ -74,7 +74,8 @@ impl Lexer {
 		let char = self.advance();
 		match char {
 			'\n' => {
-				self.push_token(TokenType::NewLine, None);
+				// TODO: Make it possible to use `\n` insted of `;`
+				// self.push_token(TokenType::NewLine, None);
 				self.line += 1;
 			}
 			'\t' | '\r' | ' ' => {}
