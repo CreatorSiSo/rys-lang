@@ -29,14 +29,15 @@ impl Interpreter {
 				initializer,
 				mutable,
 			} => {
-				self.env.declare(name, self.expr(initializer)?, mutable);
+				let value = self.expr(initializer)?;
+				self.env.declare(name, value, mutable);
 			}
 			Stmt::Expr(expr) => {
 				self.expr(expr)?;
 			}
 			Stmt::Print(expr) => match self.expr(expr)? {
 				Number(n) => println!("{n}"),
-				String(s) => println!("\"{s}\""),
+				String(s) => println!("{s}"),
 				True => println!("true"),
 				False => println!("false"),
 			},
@@ -44,9 +45,14 @@ impl Interpreter {
 		Ok(())
 	}
 
-	pub fn expr(&self, expr: Expr) -> Result<Literal, RuntimeError> {
+	pub fn expr(&mut self, expr: Expr) -> Result<Literal, RuntimeError> {
 		Ok(match expr {
 			Expr::Var(name) => self.env.get(&name).cloned()?,
+			Expr::Assign(name, expr) => {
+				let value = self.expr(*expr)?;
+				self.env.set(&name, value.clone())?;
+				value
+			}
 			Expr::Literal(literal) => literal,
 			Expr::Group(expr) => self.expr(*expr)?,
 			Expr::Unary(op, expr) => self.unary(op, expr)?,
@@ -54,7 +60,7 @@ impl Interpreter {
 		})
 	}
 
-	fn unary(&self, op: UnaryOp, expr: Box<Expr>) -> Result<Literal, RuntimeError> {
+	fn unary(&mut self, op: UnaryOp, expr: Box<Expr>) -> Result<Literal, RuntimeError> {
 		let right = self.expr(*expr)?;
 
 		match (op, right) {
@@ -66,7 +72,7 @@ impl Interpreter {
 	}
 
 	fn binary(
-		&self,
+		&mut self,
 		expr_l: Box<Expr>,
 		op: BinaryOp,
 		expr_r: Box<Expr>,

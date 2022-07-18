@@ -17,6 +17,8 @@ pub enum Expr {
 	Unary(UnaryOp, Box<Expr>),
 	Literal(Literal),
 	Group(Box<Expr>),
+	// TODO: Should this really be an expression or should assignment be a statement?
+	Assign(String, Box<Expr>),
 	Var(String),
 }
 

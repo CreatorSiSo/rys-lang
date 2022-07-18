@@ -196,10 +196,33 @@ impl Lexer {
 		// Consume closing "
 		self.advance();
 
-		let value: String = self.source[self.start + 1..self.current - 1]
+		let mut iter = self.source[self.start + 1..self.current - 1]
 			.iter()
-			.map(|c| c.to_string())
-			.collect();
+			.peekable();
+
+		let mut value = String::new();
+
+		loop {
+			if let Some(c) = iter.next() {
+				if *c == '\\' {
+					match iter.peek() {
+						Some('t') => {
+							iter.next();
+							value.push('\t');
+						}
+						Some('n') => {
+							iter.next();
+							value.push('\n');
+						}
+						_ => value.push('\\'),
+					}
+				} else {
+					value.push(*c)
+				}
+			} else {
+				break;
+			}
+		}
 
 		self.push_token(TokenType::String, Some(Literal::String(value)));
 	}

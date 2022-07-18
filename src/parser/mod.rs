@@ -66,7 +66,7 @@ impl Parser {
 		self.statement()
 	}
 
-	/// const_decl => "let" IDENTIFIER "=" expression ";"
+	/// const_decl => "const" IDENTIFIER "=" expression ";"
 	fn const_decl(&mut self) -> Result<Stmt, ParseError> {
 		let name = self
 			.consume(TokenType::Identifier, "Expected variable name")?
@@ -85,7 +85,7 @@ impl Parser {
 		}
 	}
 
-	/// mut_decl => "let" IDENTIFIER "=" expression ";"
+	/// mut_decl => "mut" IDENTIFIER "=" expression ";"
 	fn mut_decl(&mut self) -> Result<Stmt, ParseError> {
 		let name = self
 			.consume(TokenType::Identifier, "Expected variable name")?
@@ -134,7 +134,25 @@ impl Parser {
 
 	/// expression => equality
 	fn expression(&mut self) -> Result<Expr, ParseError> {
-		self.equality()
+		self.assignment()
+	}
+
+	/// assignment => identifier "=" (assignment | equality)
+	fn assignment(&mut self) -> Result<Expr, ParseError> {
+		let expr = self.equality()?;
+
+		if self.matches(TokenType::Equal) {
+			let equals = self.previous().clone();
+			let value = Box::new(self.assignment()?);
+
+			if let Expr::Var(name) = expr {
+				return Ok(Expr::Assign(name, value));
+			}
+
+			return Err(ParseError::InvalidAssignmentTarget(equals));
+		}
+
+		Ok(expr)
 	}
 
 	/// equality => comparison (( "!=" | "==" ) comparison)*

@@ -5,14 +5,21 @@ pub enum RuntimeError {
 	ForbiddenType(String),
 	TypeMismatch(String),
 	UndeclaredVar(String),
+	Assignment(String),
 	DivideByZero,
 }
 
 // TODO: Print line number as well
 impl RuntimeError {
+	pub fn assignment<T>(name: &str, value: Literal) -> Result<T, Self> {
+		Err(Self::Assignment(format!(
+			"Cannot assign `{value}` to constant {name}"
+		)))
+	}
+
 	pub fn undeclared_var<T>(name: &str) -> Result<T, Self> {
 		Err(Self::UndeclaredVar(format!(
-			"Variable `{name}` has not yet been declared"
+			"Variable `{name}` has not been declared"
 		)))
 	}
 
