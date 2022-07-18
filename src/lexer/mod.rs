@@ -2,7 +2,9 @@ use crate::literal::Literal;
 use crate::token::{Token, TokenType};
 
 mod error;
+mod unescape;
 use error::LexerError;
+use unescape::unescape;
 
 const KEYWORDS: [(&str, TokenType); 17] = [
 	("and", TokenType::And),
@@ -196,34 +198,8 @@ impl Lexer {
 		// Consume closing "
 		self.advance();
 
-		let mut iter = self.source[self.start + 1..self.current - 1]
-			.iter()
-			.peekable();
-
-		let mut value = String::new();
-
-		loop {
-			if let Some(c) = iter.next() {
-				if *c == '\\' {
-					match iter.peek() {
-						Some('t') => {
-							iter.next();
-							value.push('\t');
-						}
-						Some('n') => {
-							iter.next();
-							value.push('\n');
-						}
-						_ => value.push('\\'),
-					}
-				} else {
-					value.push(*c)
-				}
-			} else {
-				break;
-			}
-		}
-
+		let slice = &self.source[self.start + 1..self.current - 1];
+		let value = unescape(slice);
 		self.push_token(TokenType::String, Some(Literal::String(value)));
 	}
 
